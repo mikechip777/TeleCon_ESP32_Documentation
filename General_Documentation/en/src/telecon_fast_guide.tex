@@ -1,0 +1,187 @@
+% TeleCon4ESP32 fast guide — first Bluetooth session only.
+% Build: pdflatex -output-directory=../build telecon_fast_guide.tex
+% Delivered PDF (Android Codes asset): ../build/fast_guide_eng.pdf
+%   (copy then remove telecon_fast_guide.pdf — see build_guides.sh)
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[margin=2.4cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{needspace}
+\usepackage{etoolbox}
+\usepackage{tikz}
+\usetikzlibrary{shadows}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{caption}
+\captionsetup{justification=centering,singlelinecheck=false}
+
+\preto\section{\Needspace{8\baselineskip}}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  urlcolor=blue,
+  pdftitle={TeleCon4ESP32 Fast Guide},
+  pdfauthor={TeleCon}
+}
+
+\definecolor{ArduinoKeyword}{HTML}{00979C}
+\definecolor{ArduinoFunc}{HTML}{D35400}
+\definecolor{ArduinoComment}{HTML}{5D6D6E}
+\definecolor{ArduinoPreproc}{HTML}{9B59B6}
+\definecolor{TblHead}{HTML}{0F6F73}
+\definecolor{TblChan}{HTML}{D5F5E3}
+\definecolor{TblSw}{HTML}{FCF3CF}
+\definecolor{TblSum}{HTML}{FAD7A0}
+\definecolor{TblTelem}{HTML}{D4E6F1}
+\definecolor{TblSync}{HTML}{E8DAEF}
+\definecolor{TblId}{HTML}{F5CBA7}
+
+\newcommand{\thc}[1]{\textcolor{white}{\bfseries #1}}
+\newcommand{\chip}[2]{\colorbox{#1}{\strut\,\scriptsize #2\,}}
+\newcommand{\ui}[1]{\textsf{\textbf{#1}}}
+
+\newcommand{\shot}[4]{%
+  \par\addvspace{0.25em}%
+  \IfFileExists{../../figures/#2}{%
+    \begin{figure}[H]
+      \centering
+      \begin{tikzpicture}
+        \node[inner sep=0] (img) {%
+          \phantom{\includegraphics[width=0.68\textwidth,height=0.48\textheight,keepaspectratio]{../../figures/#2}}%
+        };
+        \fill[black, fill opacity=0.12, rounded corners=13pt]
+          ([xshift=-5.5pt+1.8mm,yshift=-5.5pt-2.3mm]img.south west) rectangle
+          ([xshift=5.5pt+1.8mm,yshift=5.5pt-2.3mm]img.north east);
+        \fill[black!92, rounded corners=13pt]
+          ([xshift=-5.5pt,yshift=-5.5pt]img.south west) rectangle
+          ([xshift=5.5pt,yshift=5.5pt]img.north east);
+        \begin{scope}
+          \clip[rounded corners=10pt]
+            (img.south west) rectangle (img.north east);
+          \node[inner sep=0] at (img.center) {%
+            \includegraphics[width=0.68\textwidth,height=0.48\textheight,keepaspectratio]{../../figures/#2}%
+          };
+        \end{scope}
+        \draw[black!30, line width=0.65pt, rounded corners=13pt]
+          ([xshift=-5.5pt,yshift=-5.5pt]img.south west) rectangle
+          ([xshift=5.5pt,yshift=5.5pt]img.north east);
+        \draw[TblHead, line width=1.25pt, line cap=round]
+          ([xshift=-5.5pt+11pt,yshift=-5.5pt+3.4pt]img.south west) --
+          ([xshift=5.5pt-11pt,yshift=-5.5pt+3.4pt]img.south east);
+      \end{tikzpicture}%
+      \caption{\textbf{#1.} #4\\[0.35em]
+        {\sffamily\scriptsize\color{ArduinoComment}#3
+          \enspace\textbullet\enspace\texttt{\detokenize{#2}}}}
+    \end{figure}%
+  }{%
+    \noindent
+    \begin{tikzpicture}
+      \node[draw=TblHead, fill=TblSw, line width=1.1pt, rounded corners=6pt,
+            inner sep=9pt, text width=\dimexpr\linewidth-20pt\relax, align=left] {
+        {\sffamily\bfseries\color{TblHead} Screenshot #1
+          \hfill{\normalfont\ttfamily\scriptsize \detokenize{#2}}}\\[0.3em]
+        {\sffamily\scriptsize\color{ArduinoFunc} #3}\\[0.35em]
+        {\sffamily\small #4}\\[0.3em]
+        {\sffamily\scriptsize\color{ArduinoComment}
+          Save as \texttt{General\_Documentation/figures/\detokenize{#2}}.}
+      };
+    \end{tikzpicture}%
+  }%
+  \par\addvspace{0.2em}%
+}
+
+\title{TeleCon4ESP32 Fast Guide\\[0.3em]
+\large First session: Default + Classic Simple}
+\author{Phone and ESP32 DevKit --- about ten minutes\\[0.2em]
+\small Full walkthrough: User Guide PDF}
+\date{Version 1.0 \quad 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Get a stick moving on \ui{Control panel} with Bluetooth Classic Simple.
+No Pro, no coins, no camera. The full User Guide covers RC Vehicle, Wi-Fi,
+and troubleshooting.
+\end{abstract}
+
+{\sffamily\scriptsize
+\chip{TblChan}{Default user}
+\chip{TblSw}{Classic Simple}
+\chip{TblSum}{Control panel --- free}}
+
+\section{You need}
+\begin{itemize}[leftmargin=1.4cm]
+  \item Android phone with TeleCon4ESP32.
+  \item ESP32 DevKit (no camera), USB cable, Arduino IDE.
+\end{itemize}
+
+\section{Flash the board}
+Open the folder that contains \texttt{TeleCon\_Classic\_Simple.ino}.
+Tools $\rightarrow$ Board $\rightarrow$ \textbf{ESP32 Dev Module}.
+Select the USB port. Upload. Serial Monitor \textbf{115200}. Press RESET.
+Wait for the ready banner. The board advertises
+\texttt{ESP32-TC-RC-BT-Simple}.
+
+\shot{S01}{s01_serial.png}{Computer, Arduino IDE Serial Monitor}
+{Serial at 115200 after RESET. Ready banner visible.}
+
+\section{Phone settings}
+Grant Nearby devices / Bluetooth when Android asks.
+Open \ui{Control panel} $\rightarrow$ gear:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.22}
+\begin{tabular}{>{\raggedright\arraybackslash}p{4.2cm}
+                >{\raggedright\arraybackslash}p{8.0cm}}
+\rowcolor{TblHead}
+\thc{Setting} & \thc{Value} \\
+\rowcolor{TblChan}
+User type & Default \\
+Board & DevKit \\
+Connection & Bluetooth, Classic + Simple (text lines) \\
+\end{tabular}
+\end{center}
+
+Leave settings. Tap Bluetooth on the module toolbar. Scan.
+Tap the advertised name
+\texttt{ESP32-TC-RC-BT-Simple}
+(PIN \texttt{1234} if asked). Status must show \ui{Connected}.
+
+\shot{S02}{s02_settings.png}{Portrait, light theme}
+{Control panel settings: Default + Classic + Simple (text lines). English UI.}
+
+\shot{S03}{s03_scan.png}{Portrait, Bluetooth scan}
+{ESP32-TC-RC-BT-Simple in Scanned Devices. English UI.}
+
+\section{Move a stick}
+Open \ui{Control panel} (landscape). Drag the left stick.
+Until the board answers OK, on-screen motion is not a live session ---
+even if Android says Bluetooth is connected.
+On the bench, official firmware echoes or updates gauges without motors.
+
+Treat sticks as live once \ui{Connected} is shown. Official sketches
+fail-safe on drop (sticks to 0).
+
+\section{If it fails}
+Power + RESET. Nearby devices allowed. Mode matches this sketch
+(not BLE, not Binary). Forget a stale Android bond and scan again.
+Full table: User Guide PDF.
+
+\section{Next}
+\begin{itemize}[leftmargin=1.4cm]
+  \item User Guide PDF --- Home, RC Vehicle, camera roles, troubleshooting.
+  \item Sketch \texttt{README.md} --- pins, motors, trim.
+  \item Stay off Advanced until this path works.
+\end{itemize}
+
+\end{document}

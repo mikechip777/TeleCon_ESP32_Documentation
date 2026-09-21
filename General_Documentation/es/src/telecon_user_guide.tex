@@ -1,0 +1,696 @@
+% Guía de usuario TeleCon4ESP32 — aplicación Android para makers.
+% Compilar: pdflatex -output-directory=../build telecon_user_guide.tex
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[margin=2.4cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[spanish]{babel}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{needspace}
+\usepackage{etoolbox}
+\usepackage{tikz}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{caption}
+\captionsetup{justification=centering,singlelinecheck=false}
+
+\usetikzlibrary{arrows.meta,shadows}
+\preto\section{\Needspace{9\baselineskip}}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  urlcolor=blue,
+  pdftitle={Guía de usuario TeleCon4ESP32},
+  pdfauthor={TeleCon}
+}
+
+\definecolor{ArduinoKeyword}{HTML}{00979C}
+\definecolor{ArduinoFunc}{HTML}{D35400}
+\definecolor{ArduinoComment}{HTML}{5D6D6E}
+\definecolor{ArduinoPreproc}{HTML}{9B59B6}
+\definecolor{TblHead}{HTML}{0F6F73}
+\definecolor{TblSync}{HTML}{E8DAEF}
+\definecolor{TblChan}{HTML}{D5F5E3}
+\definecolor{TblKnob}{HTML}{D6EAF8}
+\definecolor{TblSw}{HTML}{FCF3CF}
+\definecolor{TblSum}{HTML}{FAD7A0}
+\definecolor{TblEnd}{HTML}{E5E7E9}
+\definecolor{TblTelem}{HTML}{D4E6F1}
+\definecolor{TblId}{HTML}{F5CBA7}
+\definecolor{WireApp}{HTML}{0F6F73}
+\definecolor{WireBg}{HTML}{F4FBFC}
+
+\newcommand{\thc}[1]{\textcolor{white}{\bfseries #1}}
+\newcommand{\chip}[2]{\colorbox{#1}{\strut\,\scriptsize #2\,}}
+\newcommand{\ui}[1]{\textsf{\textbf{#1}}}
+
+\tikzset{
+  telecon actor/.style={
+    rounded corners=4pt, minimum width=2.7cm, minimum height=1.05cm,
+    font=\sffamily\bfseries, text=white, inner sep=4pt
+  },
+  telecon step/.style={
+    circle, inner sep=1pt, minimum size=0.52cm,
+    font=\sffamily\bfseries\scriptsize, text=white
+  },
+  telecon pill/.style={
+    rounded corners=2.5pt, inner sep=3.2pt,
+    font=\sffamily\scriptsize, align=center
+  },
+  telecon arr/.style={-{Latex[length=2.1mm]}, line width=0.9pt}
+}
+
+% Prefer figures/es/<file>, then shared figures/<file>.
+\newcommand{\shotlang}{es}
+\newcommand{\shotimg}[1]{%
+  \begin{tikzpicture}
+    \node[inner sep=0] (img) {%
+      \phantom{\includegraphics[width=0.68\textwidth,height=0.48\textheight,keepaspectratio]{#1}}%
+    };
+    \fill[black, fill opacity=0.12, rounded corners=13pt]
+      ([xshift=-5.5pt+1.8mm,yshift=-5.5pt-2.3mm]img.south west) rectangle
+      ([xshift=5.5pt+1.8mm,yshift=5.5pt-2.3mm]img.north east);
+    \fill[black!92, rounded corners=13pt]
+      ([xshift=-5.5pt,yshift=-5.5pt]img.south west) rectangle
+      ([xshift=5.5pt,yshift=5.5pt]img.north east);
+    \begin{scope}
+      \clip[rounded corners=10pt]
+        (img.south west) rectangle (img.north east);
+      \node[inner sep=0] at (img.center) {%
+        \includegraphics[width=0.68\textwidth,height=0.48\textheight,keepaspectratio]{#1}%
+      };
+    \end{scope}
+    \draw[black!30, line width=0.65pt, rounded corners=13pt]
+      ([xshift=-5.5pt,yshift=-5.5pt]img.south west) rectangle
+      ([xshift=5.5pt,yshift=5.5pt]img.north east);
+    \draw[TblHead, line width=1.25pt, line cap=round]
+      ([xshift=-5.5pt+11pt,yshift=-5.5pt+3.4pt]img.south west) --
+      ([xshift=5.5pt-11pt,yshift=-5.5pt+3.4pt]img.south east);
+  \end{tikzpicture}%
+}
+\newcommand{\shot}[4]{%
+  \par\addvspace{0.25em}%
+  \IfFileExists{../../figures/\shotlang/#2}{%
+    \begin{figure}[H]
+      \centering
+      \shotimg{../../figures/\shotlang/#2}%
+      \caption{\textbf{#1.} #4\\[0.35em]
+        {\sffamily\scriptsize\color{ArduinoComment}#3
+          \enspace\textbullet\enspace\texttt{\detokenize{#2}}}}
+    \end{figure}%
+  }{%
+    \IfFileExists{../../figures/#2}{%
+      \begin{figure}[H]
+        \centering
+        \shotimg{../../figures/#2}%
+        \caption{\textbf{#1.} #4\\[0.35em]
+          {\sffamily\scriptsize\color{ArduinoComment}#3
+            \enspace\textbullet\enspace\texttt{\detokenize{#2}}}}
+      \end{figure}%
+    }{%
+      \noindent
+      \begin{tikzpicture}
+        \node[
+          draw=TblHead, fill=TblSw, line width=1.15pt, rounded corners=6pt,
+          inner sep=10pt, text width=\dimexpr\linewidth-22pt\relax, align=left
+        ] {
+          {\sffamily\bfseries\color{TblHead} Captura #1
+            \hfill{\normalfont\ttfamily\scriptsize \detokenize{#2}}}\\[0.35em]
+          {\sffamily\scriptsize\color{ArduinoFunc} #3}\\[0.45em]
+          {\sffamily\small #4}\\[0.35em]
+          {\sffamily\scriptsize\color{ArduinoComment}
+            Guardar como \texttt{General\_Documentation/figures/es/\detokenize{#2}} (o \texttt{figures/} compartido).}
+        };
+      \end{tikzpicture}%
+    }%
+  }%
+  \par\addvspace{0.2em}%
+}
+
+
+\title{Guía de usuario TeleCon4ESP32\\[0.35em]
+\large App del teléfono para Panel de control y Vehículo RC}
+\author{Para quien usa la aplicación Android\\
+\small Autores de firmware: ver el PDF del protocolo de control}
+\date{Versión 1.0 \quad 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Esta guía es para la persona que sostiene el teléfono.
+Explica cómo instalar TeleCon4ESP32, cargar un sketch ESP32 de arranque,
+conectar y usar \ui{Panel de control} o \ui{Vehículo RC}.
+Formatos de bytes, UUID y checksums están en el documento del protocolo.
+Pines y banners del Monitor Serie de cada sketch están en la guía de ese sketch.
+\end{abstract}
+
+\section{Qué es TeleCon}
+\label{sec:what}
+
+El teléfono es siempre el mando.
+La placa (ESP32 DevKit, ESP32-CAM o cualquier MCU que hable el contrato)
+es la máquina.
+
+Hoy hay dos módulos:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.4cm}
+                >{\centering\arraybackslash}p{2.2cm}
+                >{\raggedright\arraybackslash}p{6.6cm}}
+\rowcolor{TblHead}
+\thc{Módulo} & \thc{Acceso} & \thc{Para qué sirve} \\
+\rowcolor{TblChan}
+\ui{Panel de control} & GRATIS & Sticks, interruptores, knobs, medidores y
+gráficas para cualquier proyecto ESP32. \\
+\rowcolor{TblSum}
+\ui{Vehículo RC} & PRO / monedas & Cabina de conducción y vídeo opcional
+de ESP32-CAM. \\
+\end{tabular}
+\end{center}
+
+\vspace{0.4em}
+{\sffamily\scriptsize
+\chip{TblChan}{Panel de control --- gratis}
+\chip{TblSum}{Vehículo RC --- Pro}
+\chip{TblTelem}{El vídeo es un enlace Wi-Fi aparte}}
+
+Los dos módulos comparten la misma sesión de control.
+El vídeo (HTTP \texttt{/stream}) es un segundo enlace: únete al Wi-Fi de la
+placa para la imagen; Bluetooth o TCP llevan los sticks.
+
+\Needspace{11cm}
+\begin{center}
+\begin{tikzpicture}[x=1cm, y=0.72cm]
+  \fill[rounded corners=7pt, WireBg] (-0.35,-1.2) rectangle (14.1,8.55);
+  \draw[rounded corners=7pt, TblHead!28, line width=0.7pt]
+    (-0.35,-1.2) rectangle (14.1,8.55);
+
+  \fill[TblHead!11, rounded corners=5pt] (0.1,5.55) rectangle (13.7,6.95);
+  \fill[ArduinoPreproc!10, rounded corners=5pt] (0.1,3.55) rectangle (13.7,5.45);
+  \fill[ArduinoKeyword!10, rounded corners=5pt] (0.1,1.5) rectangle (13.7,3.45);
+  \fill[ArduinoFunc!11, rounded corners=5pt] (0.1,-0.15) rectangle (13.7,1.4);
+
+  \node[telecon actor, fill=TblHead, align=center] at (2.4,7.7)
+    {Tel\'efono\\[-1.6pt]{\normalfont\sffamily\scriptsize t\'u}};
+  \node[telecon actor, fill=ArduinoPreproc, align=center] at (11.8,7.7)
+    {Placa\\[-1.6pt]{\normalfont\sffamily\scriptsize ESP32}};
+
+  \draw[TblHead, line width=1.4pt] (2.4,7.08) -- (2.4,0.12);
+  \draw[ArduinoPreproc, line width=1.4pt] (11.8,7.08) -- (11.8,0.12);
+
+  \node[telecon step, fill=TblHead] at (0.55,6.35) {1};
+  \draw[telecon arr, TblHead] (2.6,6.5) -- (11.6,6.5);
+  \node[telecon pill, fill=white, draw=TblHead!55] at (7.1,6.5)
+    {Bluetooth o Wi-Fi de la placa};
+  \node[font=\sffamily\scriptsize\bfseries, text=TblHead] at (7.1,5.85)
+    {1. Abrir el enlace};
+
+  \node[telecon step, fill=ArduinoPreproc] at (0.55,4.55) {2};
+  \draw[telecon arr, ArduinoPreproc] (2.6,5.05) -- (11.6,5.05);
+  \node[telecon pill, fill=TblSync] at (7.1,5.05) {El tel\'efono pide empezar};
+  \draw[telecon arr, ArduinoKeyword] (11.6,4.2) -- (2.6,4.2);
+  \node[telecon pill, fill=TblChan] at (5.35,4.2) {S\'i};
+  \node[font=\sffamily\scriptsize\bfseries, text=ArduinoComment] at (7.1,4.2) {o};
+  \node[telecon pill, fill=TblId] at (8.85,4.2) {No};
+  \node[font=\sffamily\scriptsize\bfseries, text=ArduinoPreproc] at (7.1,3.75)
+    {2. La sesi\'on viva empieza solo tras el S\'i};
+
+  \node[telecon step, fill=ArduinoKeyword] at (0.55,2.55) {3};
+  \draw[telecon arr, ArduinoKeyword] (2.6,3.05) -- (11.6,3.05);
+  \node[telecon pill, fill=TblChan] at (7.1,3.05) {Sticks, interruptores, knobs};
+  \draw[telecon arr, ArduinoFunc] (11.6,2.15) -- (2.6,2.15);
+  \node[telecon pill, fill=TblTelem] at (7.1,2.15) {Medidores, paneles, gr\'afica};
+  \node[font=\sffamily\scriptsize\bfseries, text=ArduinoKeyword] at (7.1,1.7)
+    {3. T\'u conduces; la placa puede enviar telemetr\'ia};
+
+  \node[telecon step, fill=ArduinoFunc] at (0.55,0.7) {4};
+  \draw[telecon arr, ArduinoFunc] (2.6,0.82) -- (11.6,0.82);
+  \node[telecon pill, fill=TblSum] at (7.1,0.82) {Cae el enlace};
+  \node[font=\sffamily\scriptsize\bfseries, text=ArduinoFunc] at (7.1,0.18)
+    {4. La placa debe parar motores};
+
+  \node[font=\sffamily\scriptsize, text=ArduinoComment] at (7.0,-0.75)
+    {Hasta que la placa responda S\'i, mover un stick no es sesi\'on TeleCon viva.};
+\end{tikzpicture}
+\end{center}
+
+\section{Qué necesitas}
+\label{sec:need}
+
+\begin{itemize}[leftmargin=1.4cm]
+  \item Un teléfono Android (Android~12 o posterior simplifica el Bluetooth).
+  \item Cable USB y un ordenador con Arduino IDE (para cargar el sketch).
+  \item Un ESP32 DevKit para la primera sesión.
+        Un ESP32-CAM es opcional y solo hace falta para vídeo.
+\end{itemize}
+
+Quédate en \ui{Predeterminado} y \ui{Classic + Simple} hasta que ese camino
+funcione. \ui{Avanzado} (Binary, BLE, Wi-Fi de DevKit, CAM Binary) es para
+después.
+
+\section{Seguridad}
+\label{sec:safety}
+
+\begin{itemize}[leftmargin=1.4cm]
+  \item Trata los sticks como vivos cuando la app muestre \ui{Conectado}.
+        Ruedas, servos y ESC pueden moverse.
+  \item Hasta que la placa responda sí, el movimiento en pantalla no es una
+        sesión viva aunque Android diga que el Bluetooth está conectado.
+  \item Si el teléfono pierde el enlace, los sketches oficiales entran en
+        fail-safe (motores parados). Compruébalo en tu propio firmware
+        antes de que un vehículo salga del banco.
+  \item Un teléfono a la vez. Cierra otras apps que retengan el mismo
+        Bluetooth o Wi-Fi.
+\end{itemize}
+
+\section{Primera sesión}
+\label{sec:first}
+
+Objetivo: en unos diez minutos, mover un stick en \ui{Panel de control} y
+ver reaccionar la placa (eco en el Monitor Serie, o un motor si ya hay
+cableado).
+
+\paragraph{Antes de empezar.}
+Teléfono cargado. ESP32 alimentado por USB. Arduino IDE instalado.
+No hace falta Pro ni monedas en este camino.
+
+\subsection*{1 --- Instalar la app}
+
+Instala TeleCon4ESP32 desde Google Play (o tu build de depuración).
+Ábrela. Concede Dispositivos cercanos / Bluetooth cuando Android lo pida.
+En Android~11 e inferior aún hace falta el permiso de Ubicación para
+escanear; la app no necesita que la Ubicación siga activada.
+
+\shot{S01}{s01_home.png}{Vertical, tema claro, no conectado}
+{Pantalla Inicio tras el primer arranque. Barra superior (estado
+No conectado, PRO dorado opcional, chip de monedas, Ayuda), las dos tarjetas
+Panel de control (GRATIS) y Vehículo RC (PRO), e icono de documentos en una
+tarjeta. Sin tapar etiquetas. Interfaz en español.}
+
+\subsection*{2 --- Obtener el sketch de arranque}
+
+En Inicio, toca el icono de documentos de \ui{Panel de control}
+(o abre \ui{Codigos y Documentos} desde ese módulo).
+Comparte o guarda el ZIP Classic del DevKit, cópialo al ordenador y abre
+la carpeta del \texttt{.ino} en Arduino IDE.
+
+\shot{S02}{s02_codes.png}{Vertical, tema claro}
+{Códigos y documentos de Panel de control. Deben verse el PDF de esta guía,
+la guía rápida y la fila del ZIP Classic del ESP32. Interfaz en español.}
+
+Carga \textbf{TeleCon Classic Simple}.
+Placa y Puerto en Herramientas deben coincidir con el USB.
+Monitor Serie a 115200. Pulsa RESET.
+Cuando aparezca el banner de listo, la placa anuncia
+\texttt{ESP32-TC-RC-BT-Simple}.
+
+\shot{S02b}{s01_serial.png}{Ordenador, Monitor Serie de Arduino IDE}
+{Monitor Serie a 115200 tras RESET. Banner de listo de Classic Simple y
+nombre BT \texttt{ESP32-TC-RC-BT-Simple} visibles. Recorta a la ventana Serie.}
+
+Los pines y ganchos de motor están en el \texttt{README.md} de ese sketch,
+junto al \texttt{.ino}.
+
+\subsection*{3 --- Ajustar y conectar}
+
+Abre \ui{Panel de control} $\rightarrow$ ajustes (engranaje).
+\ui{Tipo de usuario} = \ui{Predeterminado}.
+\ui{Conexión} = Bluetooth, \ui{Classic + Simple (líneas de texto)}.
+Sal de ajustes y toca el botón Bluetooth en la barra del módulo.
+
+\shot{S03}{s03_settings_default.png}{Vertical, tema claro, Tipo de usuario visible}
+{Ajustes de Panel de control. Tipo de usuario Predeterminado seleccionado.
+Sección Conexión con Bluetooth + Classic + Simple (líneas de texto).
+Sin opciones Avanzado desplegadas.}
+
+Si Android pide activar Bluetooth, acéptalo.
+
+\shot{S04}{s04_permission.png}{Diálogo del sistema, vertical}
+{La hoja real de permiso o ``activar Bluetooth'' que muestra la app
+(Dispositivos cercanos en Android 12+, o Ubicación en Android 11 e inferior).
+Incluye el nombre de la app en el diálogo.}
+
+En \ui{Conectarse a un dispositivo}, toca actualizar para escanear.
+Cuando aparezca \texttt{ESP32-TC-RC-BT-Simple} bajo
+\ui{Dispositivos escaneados}, detén el escaneo y toca esa fila.
+Si ya estaba vinculado, usa \ui{Dispositivos vinculados}.
+
+\shot{S05}{s05_bluetooth_scan.png}{Vertical, tema claro, escaneo recién detenido}
+{Pantalla Bluetooth. Dispositivos vinculados y Dispositivos escaneados
+visibles. ESP32-TC-RC-BT-Simple destacado en escaneados.
+Control de actualizar / detener visible en la barra superior.}
+
+\paragraph{Resultado esperado.}
+La app vuelve al módulo. El estado muestra \ui{Conectado}.
+Inicio también muestra Conectado y resalta Panel de control.
+
+\shot{S06}{s06_home_connected.png}{Vertical, tema claro, conectado}
+{El mismo Inicio que S01, pero el estado superior dice Conectado y la
+tarjeta Panel de control es el módulo reciente resaltado.}
+
+\subsection*{4 --- Abrir Panel de control y mover un stick}
+
+Abre \ui{Panel de control} (horizontal).
+Arrastra el stick izquierdo.
+En el banco, el firmware Simple oficial refleja el movimiento en medidores
+y gráfica (modo simulación, sin cable extra).
+En el Monitor Serie deberías ver tráfico de control.
+
+\shot{S07}{s07_control_panel.png}{Horizontal, tema claro o plástico de la app}
+{HUD completo del Panel de control: ambos sticks, S1--S6, ambos knobs,
+botones laterales, medidores superiores, paneles de siete segmentos, LEDs
+y gráfica central. Conectado (sin banner ``No conectado''). Opcional: stick
+izquierdo fuera de centro para que se lea el layout.}
+
+Si no se mueve nada, quédate en esta pantalla, confirma Conectado y que
+los ajustes siguen en Classic + Simple --- ver Sección~\ref{sec:fix}.
+
+\section{Inicio}
+\label{sec:home}
+
+Inicio es el lanzador, no el mando en vivo.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.22}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.6cm}
+                >{\raggedright\arraybackslash}p{8.8cm}}
+\rowcolor{TblHead}
+\thc{Control} & \thc{Qué hace} \\
+\ui{Panel de control} / \ui{Vehículo RC} &
+  Abre ese módulo. Expande una tarjeta para detalles, documentos o
+  desbloqueo con monedas. \\
+\rowcolor{TblTelem}
+Icono de documentos &
+  ZIP y PDF de ese módulo. \\
+\ui{PRO} dorado &
+  Suscripción / mejora. \\
+\rowcolor{TblSw}
+Chip de monedas &
+  Saldo y precios (si la economía de monedas está activa). \\
+Ayuda (interrogación) &
+  FAQ corto de Inicio. \\
+\rowcolor{TblEnd}
+Título \ui{TeleCon4ESP32} &
+  Acerca de, privacidad y documentación en línea. \\
+\end{tabular}
+\end{center}
+
+\ui{Explorar catálogo} solo aparece cuando haya más módulos.
+Hasta entonces, toca una tarjeta en Inicio.
+
+\shot{S08}{s08_home_help.png}{Vertical, diálogo de Ayuda abierto}
+{Inicio con el diálogo Ayuda rápida. Título Ayuda rápida, al menos dos
+temas abiertos (primera configuración y el ESP32 no aparece). Interfaz
+en español.}
+
+\section{Conectar}
+\label{sec:connect}
+
+Conecta \emph{desde el módulo} que vas a usar (Bluetooth / Conectar de la
+barra), no solo desde un emparejamiento viejo del sistema.
+Los ajustes del módulo dicen a la app qué enlace abrir.
+
+\subsection{Bluetooth}
+
+Lo usan los sketches de DevKit: Classic Simple (Predeterminado),
+Classic Binary, BLE Binary (Avanzado).
+
+\begin{enumerate}[leftmargin=1.5cm]
+  \item Concede Dispositivos cercanos (o Ubicación en Android antiguo).
+  \item Escanea y elige la placa. El nombre anunciado es solo una etiqueta;
+        la app conecta por dirección.
+  \item Nombre oficial Predeterminado: \texttt{ESP32-TC-RC-BT-Simple}.
+\end{enumerate}
+
+Si un firmware anterior sigue vinculado, Android puede abrir el perfil
+equivocado. Olvida el dispositivo en los ajustes Bluetooth del sistema y
+vuelve a escanear.
+
+\subsection{Wi-Fi de la placa (SoftAP)}
+
+Lo usan el vídeo CAM y algunos builds Avanzado de DevKit por Wi-Fi.
+El teléfono deja el Wi-Fi de casa. Sin internet en esa red es normal.
+
+Red CAM Predeterminada: SSID \texttt{TeleCon-RC-CAM-Starter},
+contraseña \texttt{telecon1234}.
+Luego toca Conectar en el módulo para que el control use TCP
+\texttt{192.168.4.1:3333} (Rol~B) o se quede en Bluetooth (Rol~A).
+
+\shot{S09}{s09_wifi_join.png}{Vertical, ajustes Wi-Fi de Android}
+{Selector Wi-Fi del sistema con TeleCon-RC-CAM-Starter (o TeleCon-RC-CAM)
+visible, hoja de contraseña o estado ``conectado, sin internet''.
+Recorta a la UI de Wi-Fi; TeleCon puede estar en segundo plano.}
+
+No pongas SoftAP y Bluetooth en un solo ESP32-CAM.
+CAM de vídeo + DevKit de control es el montaje de dos placas (Rol~A).
+
+\section{Panel de control}
+\label{sec:panel}
+
+Mando horizontal para cualquier proyecto ESP32.
+Mientras esta pantalla está abierta, sticks y knobs se envían sin parar.
+
+\subsection{Disposición}
+
+Los números coinciden con las llamadas que añadirás sobre la captura~S07:
+
+\begin{enumerate}[leftmargin=1.5cm]
+  \item Medidores superiores --- valor analógico y nivel tipo batería.
+  \item Paneles de siete segmentos --- números grandes (por ejemplo RPM).
+        Títulos y color salen de ajustes; los valores, de la placa.
+  \item LEDs de estado --- ocho lámparas según un bitfield de telemetría.
+  \item Joysticks --- izquierdo y derecho. Muelle o retención es un ajuste.
+  \item Interruptores S1--S6 --- tres por lado.
+  \item Knobs --- valores auxiliares tipo 0--100\,\%.
+  \item Botones de acción --- cuatro pulsadores laterales.
+  \item Centro --- gráfica en Predeterminado; Cámara, Radar y gráfica de
+        stick son extras de desbloqueo.
+\end{enumerate}
+
+\subsection{Ajustes del panel}
+
+Desde el módulo: ajustes $\rightarrow$ interruptores iniciales,
+knobs iniciales, etiquetas de panel, nombres de canales de la gráfica.
+
+En el HUD en vivo del Panel de control, \textbf{toca dos veces el stick}
+que quieras configurar (izquierdo o derecho). Se abre la hoja de joystick
+de ese stick (Muelle / Retención, orientación del eje, forma).
+
+\shot{S10}{s10_panel_settings.png}{Horizontal, Ajustes de joystick visibles}
+{HUD del Panel de control tras un doble toque en un stick: hoja de ajustes
+de joystick abierta (Muelle / Retención, orientación del eje, forma).
+Interfaz en español.}
+
+La pantalla central (Gráficas / Stick / Cámara / Radar) es un selector
+circular en el HUD. Cámara y Radar necesitan monedas o Pro.
+
+\shot{S11}{s11_center_picker.png}{Horizontal, selector de pantalla central abierto}
+{Panel de control con la hoja Pantalla central: Gráficas, Stick, Cámara,
+Radar. Muestra cuáles están bloqueados si la cuenta es gratuita.}
+
+\section{Vehículo RC}
+\label{sec:vehicle}
+
+Cabina Pro.
+Se desbloquea con suscripción, monedas o el regalo explorador (anuncio
+corto).
+
+Dos montajes de hardware:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{>{\raggedright\arraybackslash}p{2.4cm}
+                >{\raggedright\arraybackslash}p{4.4cm}
+                >{\raggedright\arraybackslash}p{5.4cm}}
+\rowcolor{TblHead}
+\thc{Rol} & \thc{Placas} & \thc{Qué hace el teléfono} \\
+\rowcolor{TblChan}
+B Predet. & Un ESP32-CAM &
+  Únete al Wi-Fi CAM. Vídeo HTTP. Control por TCP :3333. \\
+\rowcolor{TblKnob}
+A overlay & CAM + DevKit &
+  Wi-Fi CAM solo para vídeo. Sticks por Bluetooth del DevKit. \\
+\end{tabular}
+\end{center}
+
+\vspace{0.35em}
+{\sffamily\scriptsize
+\chip{TblChan}{Una CAM --- Predeterminado}
+\chip{TblKnob}{Vídeo CAM + Bluetooth DevKit}
+\chip{TblId}{No una CAM para SoftAP y Bluetooth a la vez}}
+
+El trim de dirección está en Tune del HUD (tickers $\rightarrow$ Check).
+La placa guarda el sesgo.
+
+\shot{S12}{s12_rc_vehicle.jpg}{HUD horizontal}
+{Pantalla en vivo de Vehículo RC: dual sticks, telemetría HUD y panel de
+cámara (MJPEG en vivo o la tarjeta de ayuda si el stream está inactivo).
+Interfaz en español. Preferible Rol B Predeterminado con vídeo en línea.}
+
+\shot{S13}{s13_vehicle_settings.png}{Vertical, sección Conexión / CAM}
+{Ajustes de Vehículo RC: Función CAM Un ESP32-CAM (simple), Tipo de usuario
+Predeterminado, Rol B SoftAP + Simple, SSID TeleCon-RC-CAM-Starter.
+Interfaz en español.}
+
+\section{Predeterminado frente a Avanzado}
+\label{sec:modes}
+
+\ui{Tipo de usuario} en los ajustes del módulo oculta a propósito las
+opciones difíciles.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.22}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.2cm}
+                >{\raggedright\arraybackslash}p{9.0cm}}
+\rowcolor{TblHead}
+\thc{Tipo} & \thc{Enlace típico} \\
+\rowcolor{TblChan}
+Predeterminado &
+  DevKit Classic Simple, o una CAM SoftAP Simple, o Rol~A
+  (CAM solo-vídeo + DevKit Classic Simple). Gratis. \\
+\rowcolor{TblSync}
+Avanzado &
+  Classic Binary, BLE Binary, DevKit Wi-Fi Binary, CAM SoftAP Binary.
+  Monedas o Pro. \\
+\end{tabular}
+\end{center}
+
+El firmware de la placa debe coincidir con la fila elegida.
+Tras un cambio, desconecta y vuelve a conectar.
+\ui{Restaurar valores originales} deja ese módulo en el enlace
+Predeterminado de arranque.
+
+\section{Códigos y Acerca de}
+\label{sec:docs}
+
+\begin{itemize}[leftmargin=1.4cm]
+  \item \ui{Codigos y Documentos} --- este PDF, una guía rápida y el ZIP
+        que coincide con placa + modo elegidos en ajustes.
+  \item \ui{Acerca de} --- versión, privacidad y el sitio de documentación.
+\end{itemize}
+
+\section{Monedas y Pro}
+\label{sec:coins}
+
+\ui{Panel de control} sigue gratis en Simple Predeterminado.
+La entrada a \ui{Vehículo RC}, los enlaces Avanzado y las vistas extra del
+centro (Cámara, Radar, CSV de sesión) usan monedas o suscripción Pro.
+
+El brillo dorado en una tarjeta bloqueada es el regalo explorador: un
+anuncio corto desbloquea ese módulo Pro unas horas.
+
+\shot{S14}{s14_coin_unlock.png}{Vertical, diálogo de desbloqueo}
+{Diálogo de desbloqueo con monedas para Vehículo RC o ajustes Avanzado.
+Muestra precios y el nombre del módulo. Interfaz en español.}
+
+\section{Cuando falla}
+\label{sec:fix}
+
+Empieza por el síntoma, no por el protocolo.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.7cm}
+                >{\raggedright\arraybackslash}p{8.5cm}}
+\rowcolor{TblHead}
+\thc{Ves} & \thc{Prueba esto} \\
+La placa no sale al escanear &
+  Alimentación + RESET. Banner de listo a 115200.
+  Dispositivos cercanos concedidos. Acércate. Detén el escaneo al verla. \\
+\rowcolor{TblTelem}
+Falla al conectar &
+  Abre Bluetooth desde el módulo, no solo desde el sistema.
+  Olvida un vínculo viejo. Classic frente a BLE igual que el sketch. \\
+Inicio sigue No conectado &
+  Conecta dentro del módulo. Un solo teléfono. Luego Inicio se actualiza. \\
+\rowcolor{TblSw}
+Sticks / medidores muertos &
+  Quédate en la pantalla en vivo. Los ajustes deben coincidir con el
+  sketch (Classic + Simple Predeterminado en la primera sesión).
+  Reflashea si el Serial nunca muestra listo. \\
+No se pudo conectar /
+  tiempo de espera &
+  El teléfono abrió el tubo pero la placa no respondió a tiempo.
+  El mismo modo a ambos lados; actualiza el sketch si ignora el arranque. \\
+\rowcolor{TblId}
+El protocolo no coincide &
+  Ajustes en Simple y la placa habla Binary (o al revés).
+  Cambia ajustes o carga el ZIP correcto. \\
+Sin cámara &
+  Únete primero al SSID CAM. Contraseña \texttt{telecon1234}.
+  Rol~A: vídeo en Wi-Fi CAM, sticks en Bluetooth del DevKit --- no ambas
+  radios en una CAM. \\
+\rowcolor{TblSum}
+Los motores siguen
+  tras la caída &
+  Los sketches oficiales paran. Si escribiste firmware, añade fail-safe
+  antes de probar un vehículo. \\
+\end{tabular}
+\end{center}
+
+Xiaomi / POCO en SoftAP: apaga datos móviles si muere el TCP, y deja
+TeleCon en primer plano. VPN desactivada.
+
+\section{Adónde ir después}
+\label{sec:next}
+
+\begin{itemize}[leftmargin=1.4cm]
+  \item \textbf{README} del sketch junto al \texttt{.ino} --- pines, SSID,
+        nombre BT, \texttt{YOUR CODE HERE}.
+  \item PDF del \textbf{protocolo de control} --- si escribes tu propio firmware.
+  \item Ayuda en la app --- recordatorios cortos en el teléfono.
+\end{itemize}
+
+\appendix
+\section{Lista de capturas}
+\label{sec:shots}
+
+Sustituye cada caja amarilla por el archivo del encabezado.
+Prefiere la UI en español para este PDF (inglés para el PDF EN),
+tema claro, recortada a la app (excepto S04 y S09, que son hojas del sistema).
+
+\begin{center}
+\renewcommand{\arraystretch}{1.18}
+\begin{tabular}{>{\ttfamily}c
+                >{\raggedright\arraybackslash\ttfamily\scriptsize}p{4.6cm}
+                >{\raggedright\arraybackslash}p{6.2cm}}
+\rowcolor{TblHead}
+\textcolor{white}{\bfseries ID} &
+\thc{Archivo} & \thc{Toma} \\
+S01 & s01\_home.png & Inicio, no conectado, ambas tarjetas. \\
+\rowcolor{TblTelem}
+S02 & s02\_codes.png & Códigos y documentos, Panel de control. \\
+S02b & s01\_serial.png & Monitor Serie Arduino, banner Classic Simple. \\
+\rowcolor{TblTelem}
+S03 & s03\_settings\_default.png & Ajustes: Predeterminado + Classic Simple. \\
+\rowcolor{TblTelem}
+S04 & s04\_permission.png & Diálogo Android Bluetooth / cercanos. \\
+S05 & s05\_bluetooth\_scan.png & Lista de escaneo con ESP32-TC-RC-BT-Simple. \\
+\rowcolor{TblTelem}
+S06 & s06\_home\_connected.png & Inicio, Conectado. \\
+S07 & s07\_control\_panel.png & HUD horizontal del Panel de control. \\
+\rowcolor{TblTelem}
+S08 & s08\_home\_help.png & Diálogo Ayuda rápida. \\
+S09 & s09\_wifi\_join.png & Wi-Fi del sistema unido al SoftAP CAM. \\
+\rowcolor{TblTelem}
+S10 & s10\_panel\_settings.png & Joystick Muelle / Retención. \\
+S11 & s11\_center\_picker.png & Selector de pantalla central. \\
+\rowcolor{TblTelem}
+S12 & s12\_rc\_vehicle.jpg & HUD Vehículo RC + cámara. \\
+S13 & s13\_vehicle\_settings.png & Ajustes CAM Predeterminado. \\
+\rowcolor{TblTelem}
+S14 & s14\_coin\_unlock.png & Diálogo de desbloqueo con monedas. \\
+\end{tabular}
+\end{center}
+
+\end{document}

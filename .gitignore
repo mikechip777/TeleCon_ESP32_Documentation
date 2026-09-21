@@ -4,3 +4,12 @@
 # OS
 .DS_Store
 Thumbs.db
+
+# LaTeX intermediates (keep delivered PDFs in */build/)
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fls
+*.fdb_latexmk

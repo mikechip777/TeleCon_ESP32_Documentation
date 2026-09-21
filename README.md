@@ -2,7 +2,12 @@
 
 Shared `RC:` sketches for Android **Control Panel** and **RC Vehicle Pro**. Role B (one CAM video + TCP) is RC Vehicle only.
 
+Programmers writing firmware for **any** Bluetooth or TCP device (not only these sketches): see [Protocol_Documentation](Protocol_Documentation/README.md).
+
+Android app users (Home, first connection, Control panel, RC Vehicle): see [General_Documentation](General_Documentation/README.md) (full user guide + fast guide).
+
 Open a sketch folder in Arduino IDE (the folder that contains the `.ino`).
+Pin maps, BT/SSID identity, and `YOUR CODE HERE` stay in that sketch's `README.md`.
 
 ## Product matrix
 

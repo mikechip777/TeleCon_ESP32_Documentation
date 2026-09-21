@@ -1,0 +1,1113 @@
+% Protocolo de control TeleCon — referencia técnica + ejemplos Bluetooth.
+% Compilar: pdflatex -output-directory=../build telecon_control_protocol.tex
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[margin=2.4cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[spanish]{babel}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{needspace}
+\usepackage{etoolbox}
+\usepackage{tikz}
+\usepackage{listings}
+\usepackage{verbatim}
+
+\usetikzlibrary{arrows.meta,calc,fit}
+\preto\section{\Needspace{10\baselineskip}}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  urlcolor=blue,
+  pdftitle={Protocolo de control TeleCon},
+  pdfauthor={TeleCon}
+}
+
+% Colores de sintaxis Arduino IDE 2 (legibles sobre el fondo claro del listado).
+\definecolor{ArduinoKeyword}{HTML}{00979C}
+\definecolor{ArduinoFunc}{HTML}{D35400}
+\definecolor{ArduinoString}{HTML}{D35400}
+\definecolor{ArduinoComment}{HTML}{5D6D6E}
+\definecolor{ArduinoPreproc}{HTML}{9B59B6}
+
+% Colores semánticos para tablas de campos / tramas.
+\definecolor{TblHead}{HTML}{0F6F73}
+\definecolor{TblSync}{HTML}{E8DAEF}
+\definecolor{TblChan}{HTML}{D5F5E3}
+\definecolor{TblKnob}{HTML}{D6EAF8}
+\definecolor{TblSw}{HTML}{FCF3CF}
+\definecolor{TblSum}{HTML}{FAD7A0}
+\definecolor{TblEnd}{HTML}{E5E7E9}
+\definecolor{TblTelem}{HTML}{D4E6F1}
+\definecolor{TblId}{HTML}{F5CBA7}
+\definecolor{TblLen}{HTML}{FDEBD0}
+
+\newcommand{\thc}[1]{\textcolor{white}{\bfseries #1}}
+\newcommand{\chip}[2]{\colorbox{#1}{\strut\,\scriptsize #2\,}}
+\newcommand{\mapcell}[3]{%
+  \cellcolor{#1}%
+  \begin{tabular}{@{}c@{}}
+    \strut\textbf{\texttt{#2}}\\[-1pt]
+    \scriptsize #3
+  \end{tabular}%
+}
+
+\definecolor{WireApp}{HTML}{0F6F73}
+\definecolor{WireType}{HTML}{9B59B6}
+\definecolor{WireKey}{HTML}{1A5276}
+\definecolor{WireVal}{HTML}{D35400}
+\definecolor{WireSep}{HTML}{7F8C8D}
+\definecolor{WireBg}{HTML}{F4FBFC}
+
+\newcommand{\wapp}[1]{\textcolor{WireApp}{\textbf{\texttt{#1}}}}
+\newcommand{\wtyp}[1]{\textcolor{WireType}{\textbf{\texttt{#1}}}}
+\newcommand{\wkey}[1]{\textcolor{WireKey}{\texttt{#1}}}
+\newcommand{\wval}[1]{\textcolor{WireVal}{\texttt{#1}}}
+\newcommand{\wsep}{\textcolor{WireSep}{\texttt{,}}\hspace{0pt}}
+\newcommand{\wcol}{\textcolor{WireSep}{\texttt{:}}}
+
+\tikzset{
+  telecon actor/.style={
+    rounded corners=4pt,
+    minimum width=2.7cm,
+    minimum height=1.05cm,
+    font=\sffamily\bfseries,
+    text=white,
+    inner sep=4pt
+  },
+  telecon step/.style={
+    circle,
+    inner sep=1pt,
+    minimum size=0.52cm,
+    font=\sffamily\bfseries\scriptsize,
+    text=white
+  },
+  telecon pill/.style={
+    rounded corners=2.5pt,
+    inner sep=3.2pt,
+    font=\ttfamily\scriptsize,
+    align=center
+  },
+  telecon arr/.style={-{Latex[length=2.1mm]}, line width=0.9pt}
+}
+
+\newcommand{\wireframe}[1]{%
+  \par\addvspace{0.55em}%
+  \noindent
+  {\setlength{\fboxrule}{1.1pt}%
+   \setlength{\fboxsep}{8pt}%
+   \fcolorbox{WireApp}{WireBg}{%
+     \begin{minipage}{\dimexpr\linewidth-16pt-2.2pt\relax}
+     \raggedright #1
+     \end{minipage}}}%
+  \par\addvspace{0.35em}%
+}
+
+\lstdefinestyle{Arduino}{
+  language=C++,
+  basicstyle=\ttfamily\normalsize\color{black},
+  identifierstyle=\ttfamily\normalsize\color{black},
+  keywordstyle=\ttfamily\normalsize\color{ArduinoKeyword}\bfseries,
+  keywordstyle=[2]\ttfamily\normalsize\color{ArduinoFunc},
+  keywordstyle=[3]\ttfamily\normalsize\color{ArduinoKeyword},
+  commentstyle=\ttfamily\normalsize\color{ArduinoComment}\itshape,
+  stringstyle=\ttfamily\normalsize\color{ArduinoString},
+  directivestyle=\ttfamily\normalsize\color{ArduinoPreproc}\bfseries,
+  morekeywords={
+    String,boolean,byte,word,nullptr,size_t,
+    uint8_t,uint16_t,uint32_t,uint64_t,
+    int8_t,int16_t,int32_t,int64_t
+  },
+  morekeywords=[2]{
+    setup,loop,print,println,begin,available,read,trim,
+    indexOf,substring,length,startsWith,toInt,c_str,hasClient,
+    strtol,valueOf,sendLine,applyOutputs,handleConnect,handleCtrl,
+    handleLine,sendTelemetry,sendPlot,sendData,toPlotByte,
+    millis,constrain,map,abs,snprintf,analogRead
+  },
+    morekeywords=[3]{SERIAL_8N1,SERIAL_BAUD,HIGH,LOW,INPUT,OUTPUT,INPUT_PULLUP}
+}
+
+\lstset{
+  style=Arduino,
+  breaklines=true,
+  columns=fullflexible,
+  frame=single,
+  xleftmargin=0.3em,
+  xrightmargin=0.3em,
+  framesep=3pt,
+  backgroundcolor=\color{gray!8},
+  showstringspaces=false,
+  keepspaces=true
+}
+
+\title{Protocolo de control TeleCon\\[0.4em]
+\large Contrato de flujo de bytes con la aplicación Android}
+\author{Referencia de firmware --- cualquier MCU que implemente este contrato}
+\date{Versión 1.2 \quad 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Este documento especifica cómo el firmware debe intercambiar bytes con
+TeleCon4ESP32 por Bluetooth Classic SPP, BLE Nordic UART o TCP.
+La aplicación es agnóstica al transporte: no exige un SoC Espressif, un
+nombre GAP concreto ni comandos AT de fabricante.
+Los sketches oficiales de Arduino son implementaciones de referencia de
+este contrato, no parte de la definición en el cable.
+
+Control Panel y RC Vehicle Pro comparten el prefijo de aplicación \texttt{RC}.
+El vídeo HTTP de cámara (\texttt{/stream}, \texttt{/capture}) es una sesión
+aparte y queda fuera de alcance.
+\end{abstract}
+
+\section{Arquitectura}
+\label{sec:arch}
+
+El teléfono es siempre el cliente. Tras establecer el enlace subyacente,
+abre una sesión de aplicación. En el dispositivo hay que implementar tres
+capas:
+
+\begin{enumerate}[leftmargin=1.6cm]
+  \item \textbf{Transporte} --- un flujo de octetos bidireccional
+        suficientemente fiable (sección~\ref{sec:pipes}).
+  \item \textbf{Handshake de sesión} --- una línea de texto \texttt{CONNECT}
+        y una respuesta \texttt{ACK}/\texttt{NAK} (sección~\ref{sec:handshake}).
+        El tiempo de espera en el teléfono es $2{,}5$\,s. Hasta el ACK, el
+        control de la UI no es una sesión TeleCon viva, aunque el SO marque
+        el socket como conectado.
+  \item \textbf{Carga} --- líneas de texto Simple (sección~\ref{sec:simple})
+        o tramas Binary (sección~\ref{sec:binary}), según el ajuste del
+        usuario y el campo \texttt{proto} de \texttt{CONNECT}.
+\end{enumerate}
+
+\Needspace{13.2cm}
+\begin{center}
+\begin{tikzpicture}[x=1cm, y=0.78cm]
+  \fill[rounded corners=7pt, WireBg] (-0.4,-1.45) rectangle (14.15,8.7);
+  \draw[rounded corners=7pt, TblHead!28, line width=0.7pt]
+    (-0.4,-1.45) rectangle (14.15,8.7);
+
+  \fill[TblHead!11, rounded corners=5pt] (0.08,5.62) rectangle (13.72,7.02);
+  \fill[ArduinoPreproc!10, rounded corners=5pt] (0.08,3.62) rectangle (13.72,5.52);
+  \fill[ArduinoKeyword!10, rounded corners=5pt] (0.08,1.55) rectangle (13.72,3.52);
+  \fill[ArduinoFunc!11, rounded corners=5pt] (0.08,-0.12) rectangle (13.72,1.45);
+
+  \node[telecon actor, fill=TblHead, align=center] at (2.4,7.85)
+    {Tel\'efono\\[-1.6pt]{\normalfont\sffamily\scriptsize cliente}};
+  \node[telecon actor, fill=ArduinoPreproc, align=center] at (11.8,7.85)
+    {MCU\\[-1.6pt]{\normalfont\sffamily\scriptsize firmware}};
+  \draw[TblHead, line width=1.4pt] (2.4,7.22) -- (2.4,0.12);
+  \draw[ArduinoPreproc, line width=1.4pt] (11.8,7.22) -- (11.8,0.12);
+
+  \node[telecon step, fill=TblHead] at (0.55,6.42) {1};
+  \draw[telecon arr, TblHead] (2.6,6.55) -- (11.6,6.55);
+  \node[telecon pill, fill=white, draw=TblHead!55] at (7.1,6.55)
+    {SPP \textbullet\ NUS \textbullet\ TCP};
+  \node[font=\sffamily\scriptsize\bfseries, text=TblHead] at (7.1,5.88)
+    {1. Abrir el enlace};
+
+  \node[telecon step, fill=ArduinoPreproc] at (0.55,4.65) {2};
+  \draw[telecon arr, ArduinoPreproc] (2.6,5.12) -- (11.6,5.12);
+  \node[telecon pill, fill=TblSync] at (7.1,5.12) {RC:CONNECT};
+  \draw[telecon arr, ArduinoKeyword] (11.6,4.28) -- (2.6,4.28);
+  \node[telecon pill, fill=TblChan] at (5.25,4.28) {RC:ACK};
+  \node[font=\sffamily\scriptsize\bfseries, text=ArduinoComment] at (7.1,4.28)
+    {o};
+  \node[telecon pill, fill=TblId] at (8.95,4.28) {RC:NAK};
+  \node[font=\sffamily\scriptsize\bfseries, text=ArduinoPreproc] at (7.1,3.82)
+    {2. Handshake ($2{,}5$\,s) --- el ACK abre la sesi\'on};
+
+  \node[telecon step, fill=ArduinoKeyword] at (0.55,2.6) {3};
+  \draw[telecon arr, ArduinoKeyword] (2.6,3.12) -- (11.6,3.12);
+  \node[telecon pill, fill=TblChan] at (7.1,3.12) {CTRL / AA\,55 / BTN};
+  \draw[telecon arr, ArduinoFunc] (11.6,2.22) -- (2.6,2.22);
+  \node[telecon pill, fill=TblTelem] at (7.1,2.22) {DATA / PLOT / CC\,11--33};
+  \node[font=\sffamily\scriptsize\bfseries, text=ArduinoKeyword] at (7.1,1.75)
+    {3. Tras el ACK: control hacia abajo, telemetr\'ia hacia arriba};
+
+  \node[telecon step, fill=ArduinoFunc] at (0.55,0.72) {4};
+  \draw[telecon arr, ArduinoFunc] (2.6,0.85) -- (11.6,0.85);
+  \node[telecon pill, fill=TblSum] at (7.1,0.85) {cae el enlace};
+  \node[font=\sffamily\scriptsize\bfseries, text=ArduinoFunc] at (7.1,0.18)
+    {4. Fail-safe en el MCU};
+
+  \node[font=\sffamily\scriptsize, text=ArduinoComment] at (7.0,-0.95)
+    {El tel\'efono siempre empieza. Hasta el ACK, el movimiento de la UI no es sesi\'on viva.};
+\end{tikzpicture}
+
+\vspace{0.3em}
+{\sffamily\scriptsize
+\chip{TblHead!18}{\textcolor{TblHead}{\textbf{1} enlace}}
+\chip{TblSync}{\textbf{2} CONNECT}
+\chip{TblChan}{ACK / CTRL}
+\chip{TblId}{NAK}
+\chip{TblTelem}{DATA / PLOT}
+\chip{TblSum}{\textbf{4} ca\'ida}}
+
+\vspace{0.15em}
+{\sffamily\scriptsize\itshape
+Flujo tel\'efono--MCU. Verde = aceptar, naranja = rechazar, verde azulado = control, azul = telemetr\'ia.}
+\end{center}
+
+El nombre anunciado por Bluetooth (por ejemplo
+\texttt{ESP32-TC-RC-BT-Simple} en el firmware oficial) es solo presentación
+GAP/SDP.
+El analizador del handshake no busca la cadena \texttt{ESP32}.
+La conexión usa la \textbf{dirección} remota más el UUID SPP o los
+atributos NUS.
+
+\subsection{Acoplamiento de modos}
+
+El transporte y la carga del firmware deben coincidir con el
+\texttt{BluetoothConnectionMode} almacenado:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.5cm}
+                >{\centering\arraybackslash}p{2.3cm}
+                >{\centering\arraybackslash}p{1.8cm}
+                >{\raggedright\arraybackslash}p{3.8cm}}
+\rowcolor{TblHead}
+\thc{Modo en la aplicación} & \thc{Transporte} & \thc{proto} & \thc{Carga tras ACK} \\
+\rowcolor{TblChan}
+Classic Simple & SPP & \texttt{simple} & Sección~\ref{sec:simple} \\
+\rowcolor{TblTelem}
+Classic Binary & SPP & \texttt{binary} & Sección~\ref{sec:binary} \\
+\rowcolor{TblTelem}
+BLE Binary & NUS & \texttt{binary} & Sección~\ref{sec:binary} \\
+\rowcolor{TblTelem}
+Wi-Fi SoftAP Binary & TCP :3333 & \texttt{binary} & Sección~\ref{sec:binary} \\
+\rowcolor{TblChan}
+CAM starter (rol~B) & TCP :3333 & \texttt{simple} & Sección~\ref{sec:simple} \\
+\rowcolor{TblTelem}
+CAM SoftAP Binary & TCP :3333 & \texttt{binary} & Sección~\ref{sec:binary} \\
+\rowcolor{TblId}
+CAM SoftAP heredado & TCP :3333 & \texttt{wifi} & Texto Simple \\
+\end{tabular}
+
+\vspace{0.4em}
+\chip{TblChan}{Simple}
+\chip{TblTelem}{Binary}
+\chip{TblId}{Simple heredado}
+\end{center}
+
+BLE es solo Binary en la aplicación actual.
+Un perfil GATT serie propio (UUID típicos de HM-10) falla en el descubrimiento:
+el cliente solo busca Nordic UART.
+
+La discrepancia debe señalarse con \texttt{NAK} (\texttt{expected} = capacidad
+del dispositivo, \texttt{actual} = valor de \texttt{CONNECT}).
+Ignorarla produce \texttt{HandshakeFailure.Timeout} en el teléfono.
+
+\section{Transportes}
+\label{sec:pipes}
+
+\subsection{Classic SPP (RFCOMM)}
+
+Serial Port Profile, UUID
+\texttt{00001101-0000-1000-8000-00805F9B34FB}.
+
+El cliente Android intenta, en este orden:
+\texttt{createRfcommSocketToServiceRecord} seguro,
+\texttt{createInsecureRfcommSocketToServiceRecord} inseguro y luego un
+socket RFCOMM por reflexión en el canal~1.
+El tercer intento existe porque algunos stacks (incluido
+\texttt{BluetoothSerial} del ESP32 con un \texttt{WifiNetworkSpecifier}
+SoftAP activo) fallan la búsqueda SDP del UUID.
+
+HC-05 / HC-06 exponen este UUID como puente UART transparente.
+El MCU solo implementa el protocolo de bytes en ese UART; el baud es
+ajuste del módulo (habitualmente 9600 o 115200), no lo negocia el teléfono.
+
+\subsection{BLE Nordic UART Service}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{>{\raggedright\arraybackslash}p{4.4cm}
+                >{\raggedright\arraybackslash}p{6.2cm}
+                >{\centering\arraybackslash}p{2.7cm}}
+\rowcolor{TblHead}
+\thc{Atributo en el periférico} & \thc{UUID} & \thc{Rol} \\
+\rowcolor{TblSync}
+Servicio primario &
+  {\small\ttfamily 6E400001-\allowbreak B5A3-F393-\allowbreak E0A9-\allowbreak E50E24DCCA9E} &
+  Servicio \\
+\rowcolor{TblChan}
+RX (Write / Write Without Response) &
+  {\small\ttfamily 6E400002-\ldots CCA9E} &
+  Teléfono $\rightarrow$ dispositivo \\
+\rowcolor{TblTelem}
+TX (Notify) &
+  {\small\ttfamily 6E400003-\ldots CCA9E} &
+  Dispositivo $\rightarrow$ teléfono \\
+\rowcolor{TblLen}
+CCCD en TX &
+  {\small\ttfamily 00002902-\allowbreak 0000-1000-\allowbreak 8000-\allowbreak 00805F9B34FB} &
+  Activar notify \\
+\end{tabular}
+
+\vspace{0.4em}
+\chip{TblSync}{Servicio}
+\chip{TblChan}{El teléfono escribe}
+\chip{TblTelem}{El dispositivo notifica}
+\chip{TblLen}{Config. cliente}
+\end{center}
+
+El cliente escribe octetos de protocolo en RX y recompone las notificaciones
+TX en el mismo flujo que SPP.
+Cada notify/write debe ser $\le$ MTU$-3$.
+El MTU ATT por defecto (23) implica trozos de 20 bytes; pida un MTU mayor
+si envía tramas Binary de una sola vez.
+El handshake sigue siendo ASCII delimitado por newline en este flujo.
+
+\subsection{TCP}
+
+La misma sesión y carga que Classic, en una conexión TCP.
+El firmware SoftAP oficial enlaza \texttt{192.168.4.1:3333}.
+Host y puerto no forman parte del protocolo de aplicación; son parámetros
+de despliegue.
+No invente un segundo handshake para TCP.
+
+\section{Codificación de texto}
+
+Handshake y mensajes Simple. El color indica la función de cada token:
+
+\begin{center}
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{|*{6}{>{\centering\arraybackslash}p{1.85cm}|}}
+\hline
+\mapcell{TblChan}{APP}{app} &
+\mapcell{TblSync}{TYPE}{tipo} &
+\mapcell{TblKnob}{key1}{clave} &
+\mapcell{TblId}{value1}{valor} &
+\mapcell{TblKnob}{key2}{clave} &
+\mapcell{TblId}{value2}{valor} \\
+\hline
+\end{tabular}
+\end{center}
+
+\wireframe{%
+\wapp{APP}\wcol\wtyp{TYPE}\wsep
+\wkey{key1}\wsep\wval{value1}\wsep
+\wkey{key2}\wsep\wval{value2}\wsep\texttt{...}%
+}
+
+\begin{center}
+\vspace{-0.15em}
+\chip{TblChan}{App}
+\chip{TblSync}{Tipo}
+\chip{TblKnob}{Clave}
+\chip{TblId}{Valor}
+\end{center}
+
+Terminados en \texttt{LF} (\texttt{0x0A}). Un \texttt{CR} previo se elimina.
+\texttt{APP} en este producto es \texttt{RC}.
+Las claves respetan mayúsculas tal como las envía el teléfono
+(\texttt{proto}, \texttt{lx}, \ldots).
+
+Booleanos: \texttt{1}/\texttt{0}, \texttt{true}/\texttt{false},
+\texttt{on}/\texttt{off} o cualquier entero distinto de cero.
+
+El ensamblador de entrada trata un \texttt{0xCC} inicial como inicio de
+trama Binary de telemetría y el ASCII imprimible como texto.
+Tras el ACK en modo Binary, \texttt{0xAA}/\texttt{0xBB} son tramas de
+control hacia el dispositivo.
+
+\section{Handshake de sesión}
+\label{sec:handshake}
+
+Obligatorio en cada conexión nueva SPP, NUS o TCP.
+No se usa para la cámara HTTP.
+
+\subsection{Cliente $\rightarrow$ dispositivo}
+
+\wireframe{%
+\wapp{RC}\wcol\wtyp{CONNECT}\wsep\wkey{proto}\wsep\wval{simple}\\[0.25em]
+\wapp{RC}\wcol\wtyp{CONNECT}\wsep\wkey{proto}\wsep\wval{binary}\\[0.25em]
+\wapp{RC}\wcol\wtyp{CONNECT}\wsep\wkey{proto}\wsep\wval{wifi}%
+}
+
+\begin{center}
+\vspace{-0.15em}
+\chip{TblChan}{App}
+\chip{TblSync}{Tipo}
+\chip{TblKnob}{Clave}
+\chip{TblId}{Valor}
+\end{center}
+
+\texttt{wifi} se conserva para SoftAP CAM de una sola placa heredado.
+El firmware Simple nuevo debe aceptar \texttt{simple} y \texttt{wifi} y
+emitir el mismo ACK.
+
+El teléfono espera $2500$\,ms una línea con prefijo \texttt{RC} y tipo
+\texttt{ACK} o \texttt{NAK}.
+
+\subsection{Dispositivo $\rightarrow$ cliente}
+
+\wireframe{%
+\wapp{RC}\wcol\wtyp{ACK}\wsep\wkey{app}\wsep\wval{RC}%
+}
+
+Las claves extra del ACK se ignoran al establecer la sesión.
+
+\wireframe{%
+\wapp{RC}\wcol\wtyp{NAK}\wsep
+\wkey{reason}\wsep\wval{proto\_mismatch}\wsep
+\wkey{expected}\wsep\wval{simple}\wsep
+\wkey{actual}\wsep\wval{binary}\\[0.25em]
+\wapp{RC}\wcol\wtyp{NAK}\wsep
+\wkey{reason}\wsep\wval{app\_mismatch}\wsep
+\wkey{expected}\wsep\wval{RC}\wsep
+\wkey{actual}\wsep\wval{XX}%
+}
+
+\texttt{reason} debe ser \texttt{proto\_mismatch} o \texttt{app\_mismatch}
+para los diálogos estructurados de Android.
+\texttt{RC:ACK,steer\_center,1} es un acuse posterior de ajustes y no debe
+usarse como éxito de CONNECT.
+
+\subsection{Estado recomendado en el dispositivo}
+
+\begin{enumerate}[leftmargin=1.6cm]
+  \item Enlace arriba $\rightarrow$ \texttt{session\_ok = false}, salidas
+        en fail-safe.
+  \item Línea \texttt{CONNECT} completa $\rightarrow$ comparar \texttt{proto}
+        (y, si se desea, el prefijo de app) $\rightarrow$ ACK o NAK.
+  \item Tras ACK, habilitar \texttt{CTRL}/\texttt{AA 55} y TX de telemetría.
+  \item Al caer el enlace, resetear \texttt{session\_ok} y las salidas.
+\end{enumerate}
+
+\section{\texorpdfstring{Implementación de referencia: SPP Simple\\[0.15em](ESP32 \texttt{BluetoothSerial})}{Implementación de referencia: SPP Simple (ESP32 BluetoothSerial)}}
+\label{sec:code-esp32}
+
+Bluetooth Classic en piezas clase ESP32-WROOM.
+Ajuste de la aplicación: Classic Simple.
+El nombre GAP es arbitrario.
+
+\begin{lstlisting}
+#include "BluetoothSerial.h"
+
+#define SERIAL_BAUD         115200
+
+BluetoothSerial SerialBT;
+
+const char* BT_NAME = "TeleCon-RC";
+const char* MY_PROTO = "simple";
+
+bool sessionOk = false;
+String lineBuf;
+
+int lx = 0, ly = 0, rx = 0, ry = 0;
+int lk = 512, rk = 512;
+uint8_t sw = 0;
+
+String valueOf(const String& line, const char* key) {
+  String token = String(key) + ",";
+  int i = line.indexOf(token);
+  if (i < 0) return "";
+  i += token.length();
+  int j = line.indexOf(',', i);
+  if (j < 0) j = line.length();
+  return line.substring(i, j);
+}
+
+void sendLine(const String& s) {
+  SerialBT.print(s);
+  SerialBT.print('\n');
+}
+
+void applyOutputs() {
+  // Mapear palancas ya condicionadas (-100..100) a actuadores.
+}
+
+void handleConnect(const String& line) {
+  String proto = valueOf(line, "proto");
+  if (proto != MY_PROTO &&
+      !(String(MY_PROTO) == "simple" && proto == "wifi")) {
+    sendLine(String("RC:NAK,reason,proto_mismatch,expected,") +
+             MY_PROTO + ",actual," + proto);
+    sessionOk = false;
+    return;
+  }
+  sendLine("RC:ACK,app,RC");
+  sessionOk = true;
+}
+
+void handleCtrl(const String& line) {
+  lx = valueOf(line, "lx").toInt();
+  ly = valueOf(line, "ly").toInt();
+  rx = valueOf(line, "rx").toInt();
+  ry = valueOf(line, "ry").toInt();
+  lk = valueOf(line, "lk").toInt();
+  rk = valueOf(line, "rk").toInt();
+  sw = (uint8_t)strtol(valueOf(line, "sw").c_str(), nullptr, 16);
+  applyOutputs();
+}
+
+void handleLine(String line) {
+  line.trim();
+  if (line.length() == 0) return;
+  if (line.startsWith("RC:CONNECT")) {
+    handleConnect(line);
+    return;
+  }
+  if (!sessionOk) return;
+  if (line.startsWith("RC:CTRL")) handleCtrl(line);
+  else if (line.startsWith("RC:BTN")) {
+    (void)valueOf(line, "id").toInt();
+  } else if (line.startsWith("RC:SET")) {
+    // persistir steer_center / rx si implementa trim
+  }
+}
+
+void setup() {
+  Serial.begin(SERIAL_BAUD);
+  SerialBT.begin(BT_NAME);
+}
+
+void loop() {
+  if (!SerialBT.hasClient()) {
+    if (sessionOk) {
+      sessionOk = false;
+      // fail-safe
+    }
+    lineBuf = "";
+  }
+  while (SerialBT.available()) {
+    char c = (char)SerialBT.read();
+    if (c == '\n') {
+      handleLine(lineBuf);
+      lineBuf = "";
+    } else if (c != '\r') {
+      if (lineBuf.length() < 200) lineBuf += c;
+      else lineBuf = "";
+    }
+  }
+}
+\end{lstlisting}
+
+Telemetría tras el ACK (DATA típico $2$\,Hz, PLOT $10$--$20$\,Hz):
+
+\begin{lstlisting}
+void sendTelemetry(int leftPanel, int batt, int analog) {
+  sendLine("RC:DATA,left," + String(leftPanel) +
+           ",batt," + String(batt) + ",analog," + String(analog));
+}
+
+void sendPlot(uint8_t v0, uint8_t v1, uint8_t v2, uint8_t v3) {
+  sendLine("RC:PLOT,v0," + String(v0) + ",v1," + String(v1) +
+           ",v2," + String(v2) + ",v3," + String(v3));
+}
+\end{lstlisting}
+
+\section{\texorpdfstring{Implementación de referencia: SPP Simple\\[0.15em]por UART HC-05}{Implementación de referencia: SPP Simple por UART HC-05}}
+\label{sec:code-hc05}
+
+El módulo termina SPP; el MCU ve un UART.
+La misma gramática \texttt{CONNECT}/\texttt{CTRL}.
+Iguale el baud del módulo (a menudo 9600). Cruce TX/RX; adapte niveles
+si hace falta.
+
+\begin{lstlisting}
+#include <Arduino.h>
+
+#define SERIAL_BAUD         115200
+
+HardwareSerial BT(1);
+const int BT_RX_PIN = 16;
+const int BT_TX_PIN = 17;
+const uint32_t BT_BAUD = 9600;
+const char* MY_PROTO = "simple";
+
+bool sessionOk = false;
+String lineBuf;
+
+String valueOf(const String& line, const char* key) {
+  String token = String(key) + ",";
+  int i = line.indexOf(token);
+  if (i < 0) return "";
+  i += token.length();
+  int j = line.indexOf(',', i);
+  if (j < 0) j = line.length();
+  return line.substring(i, j);
+}
+
+void sendLine(const String& s) {
+  BT.print(s);
+  BT.print('\n');
+}
+
+void handleConnect(const String& line) {
+  String proto = valueOf(line, "proto");
+  if (proto != MY_PROTO) {
+    sendLine(String("RC:NAK,reason,proto_mismatch,expected,") +
+             MY_PROTO + ",actual," + proto);
+    sessionOk = false;
+    return;
+  }
+  sendLine("RC:ACK,app,RC");
+  sessionOk = true;
+}
+
+void handleLine(String line) {
+  line.trim();
+  if (line.startsWith("RC:CONNECT")) { handleConnect(line); return; }
+  if (!sessionOk) return;
+  if (line.startsWith("RC:CTRL")) {
+    int ly = valueOf(line, "ly").toInt();
+    int rxStick = valueOf(line, "rx").toInt();
+    (void)ly;
+    (void)rxStick;
+  }
+}
+
+void setup() {
+  Serial.begin(SERIAL_BAUD);
+  BT.begin(BT_BAUD, SERIAL_8N1, BT_RX_PIN, BT_TX_PIN);
+}
+
+void loop() {
+  while (BT.available()) {
+    char c = (char)BT.read();
+    if (c == '\n') { handleLine(lineBuf); lineBuf = ""; }
+    else if (c != '\r') {
+      if (lineBuf.length() < 200) lineBuf += c;
+      else lineBuf = "";
+    }
+  }
+}
+\end{lstlisting}
+
+\section{Carga Simple}
+\label{sec:simple}
+
+\subsection{Teléfono $\rightarrow$ dispositivo}
+
+\paragraph{\texttt{RC:CTRL}}
+Se emite al cambiar la UI (no es un sondeo fijo en el teléfono).
+
+\wireframe{%
+\wapp{RC}\wcol\wtyp{CTRL}\wsep
+\wkey{lx}\wsep\wval{-50}\wsep
+\wkey{ly}\wsep\wval{100}\wsep
+\wkey{rx}\wsep\wval{0}\wsep
+\wkey{ry}\wsep\wval{0}\wsep
+\wkey{lk}\wsep\wval{512}\wsep
+\wkey{rk}\wsep\wval{256}\wsep
+\wkey{sw}\wsep\wval{03}%
+}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{>{\centering\arraybackslash}p{3.6cm}
+                >{\centering\arraybackslash}p{4.2cm}
+                >{\raggedright\arraybackslash}p{4.8cm}}
+\rowcolor{TblHead}
+\thc{Clave} & \thc{Dominio} & \thc{Significado} \\
+\rowcolor{TblChan}
+\texttt{lx}, \texttt{ly}, \texttt{rx}, \texttt{ry} & $-100\ldots 100$ & Palancas \\
+\rowcolor{TblKnob}
+\texttt{lk}, \texttt{rk} & $0\ldots 1023$ & Potenciómetros \\
+\rowcolor{TblSw}
+\texttt{sw} & hex 8 bits, dos dígitos & S1\,=\,bit0 \ldots\ S8\,=\,bit7 \\
+\end{tabular}
+
+\vspace{0.4em}
+\chip{TblChan}{Palancas}
+\chip{TblKnob}{Potenciómetros}
+\chip{TblSw}{Interruptores}
+\end{center}
+
+Dual-rate, expo, inverso y zona muerta se aplican en el teléfono antes del TX.
+El firmware no debe volver a aplicar esas curvas.
+
+\paragraph{\texttt{RC:BTN}}
+\texttt{RC:BTN,id,1} --- id 1--4 cluster central; $16$ ($0x10$) guardar
+centro de dirección en RC Vehicle Pro.
+
+\paragraph{\texttt{RC:SET}}
+\texttt{RC:SET,steer\_center,1,rx,-3} --- persistir el cero mecánico.
+\texttt{rx} incluye el trim del teléfono ($-100\ldots 100$).
+
+\subsection{Dispositivo $\rightarrow$ teléfono}
+
+La telemetría es opcional. Envíela solo tras el ACK, en el mismo flujo de
+texto que \texttt{CTRL}. Hay dos tipos de línea: \texttt{DATA} para paneles
+e indicadores lentos, y \texttt{PLOT} para un bus analógico rápido.
+Si el firmware no tiene nada que mostrar, omita el tipo; el teléfono
+conserva los últimos valores.
+
+\paragraph{\texttt{RC:DATA} --- paneles, indicadores, LED (típico $2$\,Hz)}
+
+Cada línea es una instantánea de campos enteros del HUD. Las claves pueden
+ir en cualquier orden. Si falta una clave, el teléfono mantiene el valor
+anterior.
+
+\wireframe{%
+\wapp{RC}\wcol\wtyp{DATA}\wsep
+\wkey{left}\wsep\wval{1234}\wsep
+\wkey{right}\wsep\wval{5678}\wsep
+\wkey{analog}\wsep\wval{42}\wsep
+\wkey{batt}\wsep\wval{88}\wsep
+\wkey{led}\wsep\wval{0F}%
+}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{>{\centering\arraybackslash}p{1.8cm}
+                >{\centering\arraybackslash}p{3.2cm}
+                >{\raggedright\arraybackslash}p{5.2cm}
+                >{\raggedright\arraybackslash}p{3.2cm}}
+\rowcolor{TblHead}
+\thc{Clave} & \thc{Dominio} & \thc{Significado} & \thc{HUD típico} \\
+\rowcolor{TblChan}
+\texttt{left} & entero & Panel numérico izquierdo & RC Vehicle Pro: velocidad$\times 10$ \\
+\rowcolor{TblChan}
+\texttt{right} & entero & Panel numérico derecho & Segundo contador / sin uso \\
+\rowcolor{TblTelem}
+\texttt{analog} & $0\ldots 255$ & Indicador analógico & Temperatura del motor \\
+\rowcolor{TblTelem}
+\texttt{batt} & $0\ldots 255$ & Indicador de batería & Basta con carga $0\ldots 100$ \\
+\rowcolor{TblSw}
+\texttt{led} & hex 8 bits, dos dígitos & Bits de LED & Lámparas de estado \\
+\end{tabular}
+
+\vspace{0.35em}
+\chip{TblChan}{Paneles}
+\chip{TblTelem}{Indicadores}
+\chip{TblSw}{LED}
+\end{center}
+
+El encendido y el color de los paneles se configuran en Android, no en el
+cable. Las claves heredadas \texttt{lo}, \texttt{ro}, \texttt{lg},
+\texttt{rg}, \texttt{lt}, \texttt{rt}, \texttt{at}, \texttt{bt} se ignoran
+para la apariencia.
+
+El teléfono puede reasignar estas claves (y los canales PLOT) a gráficas,
+radar o indicadores en los ajustes RC. El firmware debe seguir enviando las
+mismas claves. No emita \texttt{RC:RADAR} ni paquetes de mapa de canales.
+
+\paragraph{\texttt{RC:PLOT} --- muestras analógicas (típico $10$--$30$\,Hz)}
+
+Cada línea es una muestra de tiempo en el bus numerado \texttt{v0}\ldots\texttt{v7}
+(= CH1\ldots CH8). Mapee sensores a $0\ldots 255$ ($0$ = abajo de la gráfica,
+$255$ = arriba). Una línea de cuatro muestras es válida; si omite
+\texttt{v4}\ldots\texttt{v7}, el teléfono los deja en $0$. La aplicación
+guarda los últimos $100$ puntos por canal.
+
+\wireframe{%
+\wapp{RC}\wcol\wtyp{PLOT}\wsep
+\wkey{v0}\wsep\wval{128}\wsep
+\wkey{v1}\wsep\wval{200}\wsep
+\wkey{v2}\wsep\wval{64}\wsep
+\wkey{v3}\wsep\wval{180}\\[0.25em]
+\wapp{RC}\wcol\wtyp{PLOT}\wsep
+\wkey{v0}\wsep\wval{128}\wsep
+\wkey{v1}\wsep\wval{200}\wsep
+\wkey{v2}\wsep\wval{64}\wsep
+\wkey{v3}\wsep\wval{180}\wsep
+\wkey{v4}\wsep\wval{0}\wsep
+\wkey{v5}\wsep\wval{0}\wsep
+\wkey{v6}\wsep\wval{0}\wsep
+\wkey{v7}\wsep\wval{0}%
+}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{>{\centering\arraybackslash}p{2.2cm}
+                >{\centering\arraybackslash}p{2.4cm}
+                >{\centering\arraybackslash}p{2.2cm}
+                >{\raggedright\arraybackslash}p{6.6cm}}
+\rowcolor{TblHead}
+\thc{Clave} & \thc{Canal} & \thc{Rango} & \thc{Notas} \\
+\rowcolor{TblChan}
+\texttt{v0} & CH1 & $0\ldots 255$ & Primera traza por defecto \\
+\rowcolor{TblChan}
+\texttt{v1} & CH2 & $0\ldots 255$ & Segunda traza / radar por defecto \\
+\rowcolor{TblKnob}
+\texttt{v2} & CH3 & $0\ldots 255$ & Tercera traza por defecto \\
+\rowcolor{TblKnob}
+\texttt{v3} & CH4 & $0\ldots 255$ & Cuarta traza por defecto \\
+\rowcolor{TblTelem}
+\texttt{v4}\ldots\texttt{v7} & CH5\ldots CH8 & $0\ldots 255$ & Fuentes extra; asígnelas en el mapa de canales \\
+\end{tabular}
+
+\vspace{0.35em}
+\chip{TblChan}{CH1--CH2}
+\chip{TblKnob}{CH3--CH4}
+\chip{TblTelem}{CH5--CH8 opcionales}
+\end{center}
+
+Control Panel muestra cuatro widgets de gráfica (por defecto CH1--CH4).
+Los colores de traza están fijos por índice de canal. Las etiquetas y el
+mapa de canales viven en los ajustes RC de Android --- no envíe
+\texttt{RC:PLOTCFG}.
+
+\texttt{loop()} típico: PLOT cada $30$--$100$\,ms desde ADC o sensores
+filtrados; DATA cada $500$\,ms para paneles y batería. Condicione ambos a
+\texttt{session\_ok}.
+
+Inserte esto en el sketch de la sección~\ref{sec:code-esp32}.
+\texttt{sendLine}, \texttt{sessionOk}, \texttt{ly}, \texttt{rx} y
+\texttt{sw} ya están ahí.
+
+\begin{lstlisting}
+int toPlotByte(int value, int minVal, int maxVal) {
+  if (maxVal <= minVal) return 0;
+  return constrain(map(value, minVal, maxVal, 0, 255), 0, 255);
+}
+
+void sendData(int left, int right, int analog, int batt, uint8_t led) {
+  char line[96];
+  snprintf(line, sizeof(line),
+           "RC:DATA,left,%d,right,%d,analog,%d,batt,%d,led,%02X",
+           left, right, analog, batt, led);
+  sendLine(line);
+}
+
+void sendPlot(uint8_t v0, uint8_t v1, uint8_t v2, uint8_t v3) {
+  sendLine("RC:PLOT,v0," + String(v0) + ",v1," + String(v1) +
+           ",v2," + String(v2) + ",v3," + String(v3));
+}
+
+unsigned long lastDataMs = 0;
+unsigned long lastPlotMs = 0;
+
+void loop() {
+  // leer SerialBT y handleLine() como en la seccion 5
+  if (!sessionOk) return;
+
+  unsigned long now = millis();
+  if (now - lastDataMs >= 500) {
+    lastDataMs = now;
+    int speedX10 = abs(ly) * 25 / 10;  // HUD de RC Vehicle Pro
+    sendData(speedX10, 0, 90, 76, sw);
+  }
+  if (now - lastPlotMs >= 50) {
+    lastPlotMs = now;
+    sendPlot(toPlotByte(analogRead(34), 0, 4095),
+             toPlotByte(abs(ly), 0, 100),
+             toPlotByte(76, 0, 100),
+             toPlotByte(abs(rx), 0, 100));
+  }
+}
+\end{lstlisting}
+
+\Needspace{0.72\textheight}
+\section{Carga Binary}
+\label{sec:binary}
+
+Se usa tras \texttt{RC:CONNECT,proto,binary} y ACK.
+El handshake sigue siendo ASCII.
+
+\subsection{Teléfono $\rightarrow$ dispositivo --- \texttt{AA 55} (18 bytes)}
+
+Canales de 12 bits little-endian. El color indica la función de cada campo:
+
+\begin{center}
+\begin{minipage}{\textwidth}
+\centering
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{|*{10}{>{\centering\arraybackslash}p{1.28cm}|}}
+\hline
+\mapcell{TblSync}{AA 55}{0--1} &
+\mapcell{TblChan}{Lx}{2--3} &
+\mapcell{TblChan}{Ly}{4--5} &
+\mapcell{TblChan}{Rx}{6--7} &
+\mapcell{TblChan}{Ry}{8--9} &
+\mapcell{TblKnob}{Lk}{10--11} &
+\mapcell{TblKnob}{Rk}{12--13} &
+\mapcell{TblSw}{SW}{14} &
+\mapcell{TblSum}{$\sum$}{15} &
+\mapcell{TblEnd}{CR LF}{16--17} \\
+\hline
+\end{tabular}
+
+\vspace{0.45em}
+\renewcommand{\arraystretch}{1.25}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{>{\centering\arraybackslash}p{1.35cm}
+                >{\centering\arraybackslash}p{1.05cm}
+                >{\raggedright\arraybackslash}p{9.15cm}
+                >{\centering\arraybackslash}p{2.5cm}}
+\rowcolor{TblHead}
+\thc{Despl.} & \thc{Tam.} & \thc{Contenido} & \thc{Rol} \\
+\rowcolor{TblSync}
+0--1 & 2 & Sincronía \texttt{0xAA 0x55} & Sincronía \\
+\rowcolor{TblChan}
+2--3 & 2 & Lx, 12 bit LE & Canal \\
+\rowcolor{TblChan}
+4--5 & 2 & Ly, 12 bit LE & Canal \\
+\rowcolor{TblChan}
+6--7 & 2 & Rx, 12 bit LE & Canal \\
+\rowcolor{TblChan}
+8--9 & 2 & Ry, 12 bit LE & Canal \\
+\rowcolor{TblKnob}
+10--11 & 2 & Potenciómetro izquierdo $0\ldots 1023$, 12 bit LE & Potenciómetro \\
+\rowcolor{TblKnob}
+12--13 & 2 & Potenciómetro derecho $0\ldots 1023$, 12 bit LE & Potenciómetro \\
+\rowcolor{TblSw}
+14 & 1 & Bits de interruptores (S1\,=\,bit0 \ldots\ S8\,=\,bit7) & Interruptores \\
+\rowcolor{TblSum}
+15 & 1 & $\sum$ bytes $2\ldots 14$ (8 bits bajos) & Checksum \\
+\rowcolor{TblEnd}
+16--17 & 2 & Terminador \texttt{0x0D 0x0A} & Terminador \\
+\end{tabular}
+
+\vspace{0.4em}
+\chip{TblSync}{Sincronía}
+\chip{TblChan}{Canales}
+\chip{TblKnob}{Potenciómetros}
+\chip{TblSw}{Interruptores}
+\chip{TblSum}{Checksum}
+\chip{TblEnd}{Terminador}
+\end{minipage}
+\end{center}
+
+Mapeo de palanca: porcentaje $p\in[-100,100] \mapsto \lfloor(p+100)\times 4094/200\rfloor$
+con centro $0\mapsto 2047$ (unsigned $0\ldots 4094$).
+
+\subsection{Teléfono $\rightarrow$ dispositivo --- \texttt{BB 66} (4 bytes)}
+
+Los id coinciden con \texttt{RC:BTN} Simple.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{>{\centering\arraybackslash}p{1.35cm}
+                >{\centering\arraybackslash}p{1.05cm}
+                >{\raggedright\arraybackslash}p{9.15cm}
+                >{\centering\arraybackslash}p{2.5cm}}
+\rowcolor{TblHead}
+\thc{Despl.} & \thc{Tam.} & \thc{Contenido} & \thc{Rol} \\
+\rowcolor{TblSync}
+0--1 & 2 & Sincronía \texttt{0xBB 0x66} & Sincronía \\
+\rowcolor{TblId}
+2 & 1 & Id de botón (1--4; $16$\,=\,guardar centro) & Botón \\
+\rowcolor{TblId}
+3 & 1 & El mismo id repetido & Botón \\
+\end{tabular}
+
+\vspace{0.4em}
+\chip{TblSync}{Sincronía}
+\chip{TblId}{Botón}
+\end{center}
+
+\subsection{Dispositivo $\rightarrow$ teléfono}
+
+\paragraph{\texttt{CC 11} (8 bytes)}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{>{\centering\arraybackslash}p{1.35cm}
+                >{\centering\arraybackslash}p{1.05cm}
+                >{\raggedright\arraybackslash}p{9.15cm}
+                >{\centering\arraybackslash}p{2.5cm}}
+\rowcolor{TblHead}
+\thc{Despl.} & \thc{Tam.} & \thc{Contenido} & \thc{Rol} \\
+\rowcolor{TblSync}
+0--1 & 2 & Sincronía \texttt{0xCC 0x11} & Sincronía \\
+\rowcolor{TblTelem}
+2--3 & 2 & left, int16 LE & Telemetría \\
+\rowcolor{TblTelem}
+4--5 & 2 & right, int16 LE & Telemetría \\
+\rowcolor{TblTelem}
+6 & 1 & Flags reservados & Telemetría \\
+\rowcolor{TblSum}
+7 & 1 & $\sum$ bytes $2\ldots 6$ (8 bits bajos) & Checksum \\
+\end{tabular}
+\end{center}
+
+\paragraph{\texttt{CC 22} (6 bytes)}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{>{\centering\arraybackslash}p{1.35cm}
+                >{\centering\arraybackslash}p{1.05cm}
+                >{\raggedright\arraybackslash}p{9.15cm}
+                >{\centering\arraybackslash}p{2.5cm}}
+\rowcolor{TblHead}
+\thc{Despl.} & \thc{Tam.} & \thc{Contenido} & \thc{Rol} \\
+\rowcolor{TblSync}
+0--1 & 2 & Sincronía \texttt{0xCC 0x22} & Sincronía \\
+\rowcolor{TblTelem}
+2 & 1 & analog, $u8$ & Telemetría \\
+\rowcolor{TblTelem}
+3 & 1 & battery, $u8$ & Telemetría \\
+\rowcolor{TblTelem}
+4 & 1 & LED, $u8$ & Telemetría \\
+\rowcolor{TblSum}
+5 & 1 & $\sum$ bytes $2\ldots 4$ (8 bits bajos) & Checksum \\
+\end{tabular}
+\end{center}
+
+\paragraph{\texttt{CC 33} (variable)}
+
+\texttt{count} debe ser 4 u 8.
+No envíe \texttt{CC 44}.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{>{\centering\arraybackslash}p{1.6cm}
+                >{\centering\arraybackslash}p{1.15cm}
+                >{\raggedright\arraybackslash}p{8.9cm}
+                >{\centering\arraybackslash}p{2.5cm}}
+\rowcolor{TblHead}
+\thc{Despl.} & \thc{Tam.} & \thc{Contenido} & \thc{Rol} \\
+\rowcolor{TblSync}
+0--1 & 2 & Sincronía \texttt{0xCC 0x33} & Sincronía \\
+\rowcolor{TblLen}
+2--3 & 2 & \texttt{length} uint16 LE ($=1+\textit{count}$) & Longitud \\
+\rowcolor{TblLen}
+4 & 1 & \texttt{count} (4 u 8) & Cuenta \\
+\rowcolor{TblChan}
+5--$4{+}c$ & $c$ & $c$ muestras $u8$ (CH1\ldots CH$c$) & Muestras \\
+\rowcolor{TblSum}
+$5{+}c$ & 1 & $\sum$ desde offset 2 hasta la última muestra & Checksum \\
+\end{tabular}
+
+\vspace{0.35em}
+{\scriptsize $c$\,=\,\texttt{count}. El checksum cubre desde el desplazamiento 2 hasta la última muestra.}
+\end{center}
+
+\section{Fuera de alcance}
+
+\begin{itemize}[leftmargin=1.2cm]
+  \item HTTP MJPEG y \texttt{/camconfig}.
+  \item Asignación oficial de SSID SoftAP (despliegue, no tramas).
+  \item Perfiles BLE serie que no sean NUS.
+  \item Handshake opcional; el cliente no confirmará la sesión.
+\end{itemize}
+
+\section{Lista de implementación}
+
+\begin{enumerate}[leftmargin=1.6cm]
+  \item Enlazar SPP, NUS o TCP como flujo de octetos.
+  \item Acumular hasta \texttt{LF}; analizar \texttt{RC:CONNECT}.
+  \item Responder \texttt{RC:ACK,app,RC} o un \texttt{NAK} estructurado.
+  \item Condicionar control/telemetría a \texttt{session\_ok}; fail-safe
+        al desconectar.
+  \item Simple: \texttt{CTRL}/\texttt{BTN}/\texttt{SET} y, si aplica,
+        \texttt{DATA}/\texttt{PLOT}.
+  \item Binary: \texttt{AA 55}/\texttt{BB 66} y, si aplica,
+        \texttt{CC 11}/\texttt{CC 22}/\texttt{CC 33}.
+  \item Documentar para qué modo de la aplicación se compiló el binario.
+\end{enumerate}
+
+\end{document}
