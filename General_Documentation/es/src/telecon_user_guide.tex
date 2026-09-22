@@ -297,16 +297,31 @@ No conectado, PRO dorado opcional, chip de monedas, Ayuda), las dos tarjetas
 Panel de control (GRATIS) y Vehículo RC (PRO), e icono de documentos en una
 tarjeta. Sin tapar etiquetas. Interfaz en español.}
 
-\subsection*{2 --- Obtener el sketch de arranque}
+\subsection*{2 --- Abrir las guías}
 
-En Inicio, toca el icono de documentos de \ui{Panel de control}
-(o abre \ui{Codigos y Documentos} desde ese módulo).
-Comparte o guarda el ZIP Classic del DevKit, cópialo al ordenador y abre
-la carpeta del \texttt{.ino} en Arduino IDE.
+En Inicio, toca el icono de documentos de \ui{Panel de control}.
+\ui{Codigos y Documentos} muestra la \textbf{Guía rápida} y la
+\textbf{Guía de usuario}.
+El ZIP del sketch de arranque está en \ui{Firmware correspondiente}
+dentro de ajustes (paso siguiente).
 
 \shot{S02}{s02_codes.png}{Vertical, tema claro}
-{Códigos y documentos de Panel de control. Deben verse el PDF de esta guía,
-la guía rápida y la fila del ZIP Classic del ESP32. Interfaz en español.}
+{Códigos y documentos de Panel de control. Solo Guía rápida y Guía de
+usuario. Interfaz en español.}
+
+\subsection*{3 --- Obtener el sketch, ajustar y conectar}
+
+Abre \ui{Panel de control} $\rightarrow$ ajustes (engranaje).
+\ui{Tipo de usuario} = \ui{Predeterminado}.
+\ui{Conexión} = Bluetooth, \ui{Classic + Simple (líneas de texto)}.
+En \ui{Firmware correspondiente}, toca el enlace de código de
+\texttt{TeleCon\_Classic\_Simple}, comparte o guarda el ZIP, cópialo al
+ordenador y abre la carpeta del \texttt{.ino} en Arduino IDE.
+
+\shot{S03}{s03_settings_default.png}{Vertical, tema claro, Tipo de usuario visible}
+{Ajustes de Panel de control. Tipo de usuario Predeterminado, Conexión
+Bluetooth + Classic + Simple (líneas de texto), y Firmware correspondiente
+con el enlace de TeleCon Classic Simple. Interfaz en español.}
 
 Carga \textbf{TeleCon Classic Simple}.
 Placa y Puerto en Herramientas deben coincidir con el USB.
@@ -321,17 +336,7 @@ nombre BT \texttt{ESP32-TC-RC-BT-Simple} visibles. Recorta a la ventana Serie.}
 Los pines y ganchos de motor están en el \texttt{README.md} de ese sketch,
 junto al \texttt{.ino}.
 
-\subsection*{3 --- Ajustar y conectar}
-
-Abre \ui{Panel de control} $\rightarrow$ ajustes (engranaje).
-\ui{Tipo de usuario} = \ui{Predeterminado}.
-\ui{Conexión} = Bluetooth, \ui{Classic + Simple (líneas de texto)}.
 Sal de ajustes y toca el botón Bluetooth en la barra del módulo.
-
-\shot{S03}{s03_settings_default.png}{Vertical, tema claro, Tipo de usuario visible}
-{Ajustes de Panel de control. Tipo de usuario Predeterminado seleccionado.
-Sección Conexión con Bluetooth + Classic + Simple (líneas de texto).
-Sin opciones Avanzado desplegadas.}
 
 Si Android pide activar Bluetooth, acéptalo.
 
@@ -391,7 +396,8 @@ Inicio es el lanzador, no el mando en vivo.
   desbloqueo con monedas. \\
 \rowcolor{TblTelem}
 Icono de documentos &
-  ZIP y PDF de ese módulo. \\
+  Guía de usuario y Guía rápida de ese módulo
+  (los ZIP de sketches están en Ajustes $\rightarrow$ Firmware correspondiente). \\
 \ui{PRO} dorado &
   Suscripción / mejora. \\
 \rowcolor{TblSw}
@@ -574,8 +580,11 @@ Predeterminado de arranque.
 \label{sec:docs}
 
 \begin{itemize}[leftmargin=1.4cm]
-  \item \ui{Codigos y Documentos} --- este PDF, una guía rápida y el ZIP
-        que coincide con placa + modo elegidos en ajustes.
+  \item \ui{Codigos y Documentos} --- esta Guía de usuario y la Guía rápida
+        del módulo.
+  \item \ui{Ajustes} del módulo $\rightarrow$ \ui{Firmware correspondiente}
+        --- comparte o guarda el ZIP del sketch que coincide con la placa y
+        la conexión elegidas.
   \item \ui{Acerca de} --- versión, privacidad y el sitio de documentación.
 \end{itemize}
 
@@ -583,15 +592,60 @@ Predeterminado de arranque.
 \label{sec:coins}
 
 \ui{Panel de control} sigue gratis en Simple Predeterminado.
-La entrada a \ui{Vehículo RC}, los enlaces Avanzado y las vistas extra del
-centro (Cámara, Radar, CSV de sesión) usan monedas o suscripción Pro.
+\ui{Vehículo RC}, las opciones Avanzado y las vistas extra del centro
+(Cámara, Radar, gráfica de stick, CSV de sesión) necesitan monedas o
+suscripción Pro.
 
-El brillo dorado en una tarjeta bloqueada es el regalo explorador: un
-anuncio corto desbloquea ese módulo Pro unas horas.
+\paragraph{Dónde mirar.}
+El chip de monedas en la barra de Inicio muestra el saldo.
+Tócalo para abrir \ui{Precios en monedas} (monedero y tarifa).
+En una tarjeta Pro bloqueada usa las acciones de desbloqueo / monedas, o
+\ui{Hazte Pro} al pie de Inicio para una suscripción que evita monedas y
+anuncios.
+
+\paragraph{Ganar monedas.}
+Mira un anuncio recompensado desde la hoja de precios (botón de reproducción,
+normalmente \texttt{+3} monedas por anuncio). A veces el anuncio no está
+disponible; inténtalo más tarde.
+
+\paragraph{Gastar monedas.}
+Las monedas desbloquean \textbf{un módulo Pro a la vez} durante el plazo
+que elijas. Opciones típicas (el coste exacto está en la hoja de la app):
+
+\begin{center}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.2cm}
+                >{\raggedright\arraybackslash}p{8.2cm}}
+\rowcolor{TblHead}
+\thc{Opción} & \thc{Significado} \\
+Un uso & Desbloqueo de una sola sesión de ese módulo. \\
+\rowcolor{TblTelem}
+24 horas & Acceso temporizado de un día. \\
+3 días / 1 semana & Acceso más largo; suele mejorar el coste por día. \\
+\end{tabular}
+\end{center}
+
+Abre el diálogo de desbloqueo en el módulo deseado, elige la duración y
+confirma si el saldo alcanza. Los paquetes largos suelen bajar el
+``por día'' de la tabla de precios.
+
+\shot{S15}{s15_coin_pricing.png}{Vertical, hoja Precios en monedas}
+{Diálogo de monedero / Precios en monedas: tasa de ganancia (+3 por anuncio
+recompensado), texto de gasto y tabla Opción / Coste / Usos / Por día.
+Interfaz en español.}
+
+\paragraph{Regalo explorador.}
+El brillo dorado en una tarjeta bloqueada es un regalo explorador ocasional:
+mira un anuncio corto y desbloqueas ese módulo Pro unas horas (unas cuatro).
+El brillo vuelve al cabo de unos días.
+
+\paragraph{Suscripción Pro.}
+\ui{Hazte Pro} desbloquea los módulos Pro sin gastar monedas ni el ciclo de
+anuncios. Detalle y precio están en la hoja de suscripción de Play.
 
 \shot{S14}{s14_coin_unlock.png}{Vertical, diálogo de desbloqueo}
-{Diálogo de desbloqueo con monedas para Vehículo RC o ajustes Avanzado.
-Muestra precios y el nombre del módulo. Interfaz en español.}
+{Diálogo de desbloqueo con monedas para un módulo concreto (por ejemplo
+Vehículo RC o ajustes Avanzado): plazos y confirmación. Interfaz en español.}
 
 \section{Cuando falla}
 \label{sec:fix}
@@ -650,47 +704,5 @@ TeleCon en primer plano. VPN desactivada.
   \item PDF del \textbf{protocolo de control} --- si escribes tu propio firmware.
   \item Ayuda en la app --- recordatorios cortos en el teléfono.
 \end{itemize}
-
-\appendix
-\section{Lista de capturas}
-\label{sec:shots}
-
-Sustituye cada caja amarilla por el archivo del encabezado.
-Prefiere la UI en español para este PDF (inglés para el PDF EN),
-tema claro, recortada a la app (excepto S04 y S09, que son hojas del sistema).
-
-\begin{center}
-\renewcommand{\arraystretch}{1.18}
-\begin{tabular}{>{\ttfamily}c
-                >{\raggedright\arraybackslash\ttfamily\scriptsize}p{4.6cm}
-                >{\raggedright\arraybackslash}p{6.2cm}}
-\rowcolor{TblHead}
-\textcolor{white}{\bfseries ID} &
-\thc{Archivo} & \thc{Toma} \\
-S01 & s01\_home.png & Inicio, no conectado, ambas tarjetas. \\
-\rowcolor{TblTelem}
-S02 & s02\_codes.png & Códigos y documentos, Panel de control. \\
-S02b & s01\_serial.png & Monitor Serie Arduino, banner Classic Simple. \\
-\rowcolor{TblTelem}
-S03 & s03\_settings\_default.png & Ajustes: Predeterminado + Classic Simple. \\
-\rowcolor{TblTelem}
-S04 & s04\_permission.png & Diálogo Android Bluetooth / cercanos. \\
-S05 & s05\_bluetooth\_scan.png & Lista de escaneo con ESP32-TC-RC-BT-Simple. \\
-\rowcolor{TblTelem}
-S06 & s06\_home\_connected.png & Inicio, Conectado. \\
-S07 & s07\_control\_panel.png & HUD horizontal del Panel de control. \\
-\rowcolor{TblTelem}
-S08 & s08\_home\_help.png & Diálogo Ayuda rápida. \\
-S09 & s09\_wifi\_join.png & Wi-Fi del sistema unido al SoftAP CAM. \\
-\rowcolor{TblTelem}
-S10 & s10\_panel\_settings.png & Joystick Muelle / Retención. \\
-S11 & s11\_center\_picker.png & Selector de pantalla central. \\
-\rowcolor{TblTelem}
-S12 & s12\_rc\_vehicle.jpg & HUD Vehículo RC + cámara. \\
-S13 & s13\_vehicle\_settings.png & Ajustes CAM Predeterminado. \\
-\rowcolor{TblTelem}
-S14 & s14\_coin\_unlock.png & Diálogo de desbloqueo con monedas. \\
-\end{tabular}
-\end{center}
 
 \end{document}

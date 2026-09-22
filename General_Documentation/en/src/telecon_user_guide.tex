@@ -293,17 +293,31 @@ Not connected, optional gold PRO, coin chip, Help), the two module cards
 Control panel (FREE) and RC Vehicle (PRO), and the Codes icon on a card.
 Do not cover labels. English UI.}
 
-\subsection*{2 --- Get the starter sketch}
+\subsection*{2 --- Open the guides}
 
-On Home, tap the docs icon on \ui{Control panel} (or open
-\ui{Codes and Documents} from that module).
-Share or save the DevKit Classic ZIP, copy it to the computer, and open the
-\texttt{.ino} folder in Arduino IDE.
+On Home, tap the docs icon on \ui{Control panel}.
+\ui{Codes and Documents} shows the \textbf{Fast guide} and
+\textbf{User guide} PDFs.
+Get the starter sketch ZIP from \ui{Matching firmware} in settings
+(next step).
 
 \shot{S02}{s02_codes.png}{Portrait, light theme}
-{Codes and Documents for Control panel. The general user-guide PDF, the
-fast guide, and the ESP32 Classic ZIP row must all be visible.
+{Codes and Documents for Control panel. Fast guide and User guide only.
 English UI.}
+
+\subsection*{3 --- Get the starter sketch, match settings, then connect}
+
+Open \ui{Control panel} $\rightarrow$ settings (gear).
+\ui{User type} = \ui{Default}.
+\ui{Connection} = Bluetooth, \ui{Classic + Simple (text lines)}.
+Under \ui{Matching firmware}, tap the matching code link for
+\texttt{TeleCon\_Classic\_Simple}, share or save the ZIP, copy it to the
+computer, and open the \texttt{.ino} folder in Arduino IDE.
+
+\shot{S03}{s03_settings_default.png}{Portrait, light theme, scrolled to User type}
+{Control panel settings. User type Default, Connection Bluetooth +
+Classic + Simple (text lines), and Matching firmware with the
+TeleCon Classic Simple code link. English UI.}
 
 Flash \textbf{TeleCon Classic Simple}.
 Board and Port under Tools must match your USB device.
@@ -318,17 +332,7 @@ BT name \texttt{ESP32-TC-RC-BT-Simple} visible. Crop to the Serial window.}
 Pinouts and motor hooks stay in that sketch's \texttt{README.md} next to
 the \texttt{.ino}.
 
-\subsection*{3 --- Match settings, then connect}
-
-Open \ui{Control panel} $\rightarrow$ settings (gear).
-\ui{User type} = \ui{Default}.
-\ui{Connection} = Bluetooth, \ui{Classic + Simple (text lines)}.
-Leave the screen, then tap the Bluetooth button on the module toolbar.
-
-\shot{S03}{s03_settings_default.png}{Portrait, light theme, scrolled to User type}
-{Control panel settings. User type Default selected. Connection section
-showing Bluetooth + Classic + Simple (text lines). No Advanced options
-expanded.}
+Leave settings, then tap the Bluetooth button on the module toolbar.
 
 If Android asks to turn Bluetooth on, allow it.
 
@@ -385,7 +389,8 @@ Home is the launcher, not the live controller.
   Opens that module. Expand a card for details, docs, or coin unlock. \\
 \rowcolor{TblTelem}
 Docs icon on a card &
-  ZIP sketches and PDFs for that module. \\
+  User guide and Fast guide PDFs for that module
+  (sketch ZIPs are in Settings $\rightarrow$ Matching firmware). \\
 Gold \ui{PRO} &
   Subscription / upgrade. \\
 \rowcolor{TblSw}
@@ -562,8 +567,10 @@ link.
 \label{sec:docs}
 
 \begin{itemize}[leftmargin=1.4cm]
-  \item \ui{Codes and Documents} --- this PDF, a short fast guide, and the
-        ZIP that matches the board + mode you selected in settings.
+  \item \ui{Codes and Documents} --- this User guide PDF and the short Fast
+        guide for the module.
+  \item Module \ui{Settings} $\rightarrow$ \ui{Matching firmware} --- share or
+        save the sketch ZIP that matches the board + connection you selected.
   \item \ui{About} --- version, privacy policy, and the hosted documentation
         site.
 \end{itemize}
@@ -572,15 +579,59 @@ link.
 \label{sec:coins}
 
 \ui{Control panel} stays free on Default Simple.
-\ui{RC Vehicle} entry, Advanced links, and extra center views
-(Camera, Radar, session CSV) use coins or a Pro subscription.
+\ui{RC Vehicle}, Advanced connection options, and extra center views
+(Camera, Radar, Stick graph, session CSV) need coins or a Pro subscription.
 
-The gold sparkle on a locked card is an explorer gift: a short ad unlocks
-that Pro module for a few hours.
+\paragraph{Where to look.}
+The coin chip in the Home top bar shows your balance.
+Tap it to open \ui{Coin pricing} (wallet and rate card).
+On a locked Pro module card, use the unlock / coin actions, or
+\ui{Go Pro} at the bottom of Home for a subscription that removes the
+coin/ad path.
+
+\paragraph{Earn coins.}
+Watch a rewarded ad from the pricing sheet (play button, typically
+\texttt{+3} coins per ad). Ads may be unavailable sometimes; try again
+later.
+
+\paragraph{Spend coins.}
+Coins unlock \textbf{one Pro module at a time} for a chosen duration.
+Typical options (exact costs are on the sheet in the app):
+
+\begin{center}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.2cm}
+                >{\raggedright\arraybackslash}p{8.2cm}}
+\rowcolor{TblHead}
+\thc{Option} & \thc{Meaning} \\
+One use & Single session-style unlock of that module. \\
+\rowcolor{TblTelem}
+24 hours & Timed access for one day. \\
+3 days / 1 week & Longer timed access; usually better cost per day. \\
+\end{tabular}
+\end{center}
+
+Open the unlock dialog on the module you want, pick a duration, and confirm
+if your balance is high enough. Longer packs usually lower the effective
+coins-per-day shown in the pricing table.
+
+\shot{S15}{s15_coin_pricing.png}{Portrait, Coin pricing sheet}
+{Home coin wallet / Coin pricing dialog: earn rate (+3 per rewarded ad),
+spend line, and the Option / Cost / Uses / Per day table. English UI.}
+
+\paragraph{Explorer gift.}
+The gold sparkle on a locked card is an occasional explorer gift: watch a
+short ad to unlock that Pro module for a few hours (about four). The sparkle
+returns after a few days.
+
+\paragraph{Pro subscription.}
+\ui{Go Pro} unlocks Pro modules without spending coins and without the
+rewarded-ad earn loop. Details and pricing are in the Play subscription
+sheet.
 
 \shot{S14}{s14_coin_unlock.png}{Portrait, unlock dialog}
-{Coin unlock dialog for RC Vehicle or Advanced settings. Show coin price
-options and the module name. English UI.}
+{Coin unlock dialog for a specific module (for example RC Vehicle or
+Advanced settings): duration choices and confirm. English UI.}
 
 \section{When it fails}
 \label{sec:fix}
@@ -640,47 +691,5 @@ keep TeleCon in front. VPN off.
   \item \textbf{Control Protocol} PDF --- if you write your own firmware.
   \item In-app Help --- short reminders on the phone.
 \end{itemize}
-
-\appendix
-\section{Screenshot checklist}
-\label{sec:shots}
-
-Replace each yellow box with the file named in the header.
-Prefer English UI for the English PDF (Spanish UI for the Spanish PDF),
-light theme, cropped to the app (except S04 and S09, which are system sheets).
-
-\begin{center}
-\renewcommand{\arraystretch}{1.18}
-\begin{tabular}{>{\ttfamily}c
-                >{\raggedright\arraybackslash\ttfamily\scriptsize}p{4.6cm}
-                >{\raggedright\arraybackslash}p{6.2cm}}
-\rowcolor{TblHead}
-\textcolor{white}{\bfseries ID} &
-\thc{File} & \thc{Shot} \\
-S01 & s01\_home.png & Home, not connected, both module cards. \\
-\rowcolor{TblTelem}
-S02 & s02\_codes.png & Codes \& Documents, Control panel. \\
-S02b & s01\_serial.png & Arduino Serial Monitor, Classic Simple banner. \\
-\rowcolor{TblTelem}
-S03 & s03\_settings\_default.png & Settings: Default + Classic Simple. \\
-\rowcolor{TblTelem}
-S04 & s04\_permission.png & Android Bluetooth / Nearby dialog. \\
-S05 & s05\_bluetooth\_scan.png & Scan list with ESP32-TC-RC-BT-Simple. \\
-\rowcolor{TblTelem}
-S06 & s06\_home\_connected.png & Home, Connected. \\
-S07 & s07\_control\_panel.png & Control panel landscape HUD. \\
-\rowcolor{TblTelem}
-S08 & s08\_home\_help.png & Home Quick help dialog. \\
-S09 & s09\_wifi\_join.png & System Wi-Fi joining CAM SoftAP. \\
-\rowcolor{TblTelem}
-S10 & s10\_panel\_settings.png & Joystick Spring / Hold. \\
-S11 & s11\_center\_picker.png & Center display picker. \\
-\rowcolor{TblTelem}
-S12 & s12\_rc\_vehicle.jpg & RC Vehicle HUD + camera. \\
-S13 & s13\_vehicle\_settings.png & RC Vehicle Default CAM settings. \\
-\rowcolor{TblTelem}
-S14 & s14\_coin\_unlock.png & Coin unlock dialog. \\
-\end{tabular}
-\end{center}
 
 \end{document}

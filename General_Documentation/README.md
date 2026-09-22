@@ -25,8 +25,8 @@ captures, round corners with:
 Captured so far include S01 home, S02 codes, S02b serial, S03 settings,
 S04 Bluetooth enable dialog, S05 Bluetooth scan, S06 connected home,
 S07 control panel, S08 help, S09 Wi‑Fi SoftAP, S10 panel joystick settings,
-S11 center picker, S12 RC vehicle, S13 vehicle settings, S14 unlock.
-S04/S05/S09/S10/S13 have separate EN and ES UI captures.
+S11 center picker, S12 RC vehicle, S13 vehicle settings, S14 coin unlock,
+S15 coin pricing. S04/S05/S09/S10/S13/S15 have separate EN and ES UI captures.
 
 ## Build PDF
 
